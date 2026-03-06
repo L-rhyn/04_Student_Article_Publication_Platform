@@ -367,7 +367,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 </Typography>
                                 
                                 <Typography
-                                    variant="h5"
+                                    variant="h4"
                                     sx={{
                                         mb: 6,
                                         color: 'rgba(255, 255, 255, 0.9)',
@@ -463,19 +463,19 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         </Slide>
 
                         {!loading && articles.length > 0 && (
-                            <Box sx={{ position: 'relative', maxWidth: '800px', mx: 'auto', px: 4 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Box sx={{ position: 'relative', maxWidth: '1400px', mx: 'auto', px: { xs: 2, sm: 4, md: 6 }, py: 4 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '500px' }}>
                                     <Button
                                         onClick={prevSlide}
                                         sx={{
                                             position: 'absolute',
-                                            left: -20,
+                                            left: { xs: 10, sm: 20, md: 40 },
                                             zIndex: 2,
                                             backgroundColor: 'rgba(0, 180, 216, 0.9)',
                                             color: 'white',
-                                            minWidth: 40,
-                                            width: 40,
-                                            height: 40,
+                                            minWidth: 50,
+                                            width: 50,
+                                            height: 50,
                                             borderRadius: '50%',
                                             '&:hover': {
                                                 backgroundColor: '#0077b6',
@@ -507,8 +507,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                                 }}
                                                 onClick={() => handleArticleClick(article)}
                                                 >
-                                                    <CardContent sx={{ p: 4 }}>
-                                                        <Typography variant="h5" sx={{ 
+                                                    <CardContent sx={{ p: { xs: 4, sm: 5, md: 6 } }}>
+                                                        <Typography variant="h4" sx={{ 
                                                             fontWeight: 'bold', 
                                                             mb: 3, 
                                                             color: 'primary.main',
@@ -524,7 +524,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                                             lineHeight: 1.7,
                                                             fontSize: '1rem',
                                                             display: '-webkit-box',
-                                                            WebkitLineClamp: 4,
+                                                            WebkitLineClamp: { xs: 4, sm: 5, md: 6 },
                                                             WebkitBoxOrient: 'vertical',
                                                             overflow: 'hidden'
                                                         }}>
@@ -569,9 +569,9 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                             zIndex: 2,
                                             backgroundColor: 'rgba(0, 180, 216, 0.9)',
                                             color: 'white',
-                                            minWidth: 40,
-                                            width: 40,
-                                            height: 40,
+                                            minWidth: 50,
+                                            width: 50,
+                                            height: 50,
                                             borderRadius: '50%',
                                             '&:hover': {
                                                 backgroundColor: '#0077b6',
@@ -660,7 +660,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <Grid item xs={12} sm={6} md={4}>
                                 <Slide in timeout={2100} direction="up">
                                     <Card sx={{
-                                        p: 4,
+                                        p: { xs: 4, sm: 5, md: 6 },
                                         textAlign: 'center',
                                         height: '100%',
                                         background: 'rgba(255, 255, 255, 0.1)',
@@ -702,7 +702,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <Grid item xs={12} sm={6} md={4}>
                                 <Slide in timeout={2200} direction="up">
                                     <Card sx={{
-                                        p: 4,
+                                        p: { xs: 4, sm: 5, md: 6 },
                                         textAlign: 'center',
                                         height: '100%',
                                         background: 'rgba(255, 255, 255, 0.1)',
@@ -744,7 +744,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <Grid item xs={12} sm={6} md={4}>
                                 <Slide in timeout={2300} direction="up">
                                     <Card sx={{
-                                        p: 4,
+                                        p: { xs: 4, sm: 5, md: 6 },
                                         textAlign: 'center',
                                         height: '100%',
                                         background: 'rgba(255, 255, 255, 0.1)',
@@ -787,7 +787,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <Grid item xs={12} sm={6} md={6}>
                                 <Slide in timeout={2400} direction="up">
                                     <Card sx={{
-                                        p: 4,
+                                        p: { xs: 4, sm: 5, md: 6 },
                                         textAlign: 'center',
                                         height: '100%',
                                         background: 'rgba(255, 255, 255, 0.1)',
@@ -829,7 +829,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <Grid item xs={12} sm={6} md={6}>
                                 <Slide in timeout={2500} direction="up">
                                     <Card sx={{
-                                        p: 4,
+                                        p: { xs: 4, sm: 5, md: 6 },
                                         textAlign: 'center',
                                         height: '100%',
                                         background: 'rgba(255, 255, 255, 0.1)',
@@ -872,7 +872,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <Grid item xs={12} md={12}>
                                 <Slide in timeout={2600} direction="up">
                                     <Card sx={{
-                                        p: 4,
+                                        p: { xs: 4, sm: 5, md: 6 },
                                         textAlign: 'center',
                                         height: '100%',
                                         background: 'rgba(255, 255, 255, 0.1)',
@@ -943,6 +943,209 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     </Box>
                 </Container>
             </Box>
+
+            {/* Article Modal */}
+            <Dialog
+                open={articleModalOpen}
+                onClose={handleCloseArticleModal}
+                maxWidth="md"
+                fullWidth
+                scroll="paper"
+                TransitionComponent={Slide}
+                sx={{
+                    '& .MuiDialog-paper': {
+                        borderRadius: 3,
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                {selectedArticle && (
+                    <>
+                        <DialogTitle sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            borderBottom: '1px solid',
+                            borderColor: 'divider',
+                            pb: 2
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Avatar sx={{ bgcolor: 'primary.main' }}>
+                                    {selectedArticle.writer?.[0] || 'A'}
+                                </Avatar>
+                                <Box>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                        {selectedArticle.writer || 'Anonymous'}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {selectedArticle.updated_at}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <IconButton onClick={handleCloseArticleModal}>
+                                <CloseIcon />
+                            </IconButton>
+                        </DialogTitle>
+                        
+                        <DialogContent dividers sx={{ p: 4 }}>
+                            <Typography variant="h4" sx={{ 
+                                fontWeight: 'bold',
+                                mb: 3,
+                                color: 'primary.main'
+                            }}>
+                                {selectedArticle.title}
+                            </Typography>
+                            
+                            <Box sx={{ mb: 3 }}>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        backgroundColor: 'primary.light',
+                                        color: 'white',
+                                        px: 2,
+                                        py: 0.5,
+                                        borderRadius: 2,
+                                        display: 'inline-block',
+                                        fontSize: '0.875rem'
+                                    }}
+                                >
+                                    {selectedArticle.category || 'General'}
+                                </Typography>
+                            </Box>
+
+                            <Typography variant="body1" sx={{ 
+                                lineHeight: 1.8,
+                                mb: 4,
+                                '& p': { mb: 2 }
+                            }}>
+                                {selectedArticle.content}
+                            </Typography>
+
+                            {/* Comments Section */}
+                            <Divider sx={{ my: 3 }} />
+                            
+                            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+                                Comments ({selectedArticle.comments_count || 0})
+                            </Typography>
+
+                            {/* Add Comment */}
+                            {auth.user ? (
+                                <Box sx={{ mb: 4 }}>
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        rows={3}
+                                        variant="outlined"
+                                        placeholder="Write a comment..."
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        sx={{ mb: 2 }}
+                                    />
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                        <Button
+                                            variant="contained"
+                                            onClick={handleAddComment}
+                                            disabled={!newComment.trim() || postingComment}
+                                            startIcon={<SendIcon />}
+                                        >
+                                            {postingComment ? 'Posting...' : 'Post Comment'}
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            ) : (
+                                <Box sx={{ mb: 4, p: 2, bgcolor: 'grey.100', borderRadius: 2, textAlign: 'center' }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Please <Link href={route('login')}>login</Link> to comment
+                                    </Typography>
+                                </Box>
+                            )}
+
+                            {/* Comments List */}
+                            <List sx={{ p: 0 }}>
+                                {comments.map((comment) => (
+                                    <ListItem key={comment.id} sx={{ 
+                                        flexDirection: 'column', 
+                                        alignItems: 'flex-start',
+                                        p: 2,
+                                        mb: 2,
+                                        bgcolor: 'grey.50',
+                                        borderRadius: 2
+                                    }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 1 }}>
+                                            <Avatar sx={{ width: 32, height: 32, mr: 2, bgcolor: 'secondary.main' }}>
+                                                {comment.user?.name?.[0] || 'U'}
+                                            </Avatar>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                                {comment.user?.name || 'Anonymous'}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
+                                                {comment.updated_at}
+                                            </Typography>
+                                        </Box>
+                                        
+                                        {editingComment === comment.id ? (
+                                            <Box sx={{ width: '100%' }}>
+                                                <TextField
+                                                    fullWidth
+                                                    multiline
+                                                    rows={3}
+                                                    value={editCommentText}
+                                                    onChange={(e) => setEditCommentText(e.target.value)}
+                                                    sx={{ mb: 1 }}
+                                                />
+                                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                                    <Button
+                                                        size="small"
+                                                        variant="contained"
+                                                        onClick={() => handleUpdateComment(comment.id)}
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
+                                                        onClick={handleCancelEdit}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        ) : (
+                                            <>
+                                                <Typography variant="body2" sx={{ mb: 1, width: '100%' }}>
+                                                    {comment.content}
+                                                </Typography>
+                                                {auth.user && comment.user_id === auth.user.id && (
+                                                    <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleEditComment(comment)}
+                                                        >
+                                                            <EditIcon fontSize="small" />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleDeleteComment(comment.id)}
+                                                        >
+                                                            <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Box>
+                                                )}
+                                            </>
+                                        )}
+                                    </ListItem>
+                                ))}
+                            </List>
+
+                            {comments.length === 0 && (
+                                <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                                    <Typography>No comments yet. Be the first to comment!</Typography>
+                                </Box>
+                            )}
+                        </DialogContent>
+                    </>
+                )}
+            </Dialog>
 
             {/* Footer */}
             <Box

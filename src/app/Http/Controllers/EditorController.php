@@ -35,7 +35,7 @@ class EditorController extends Controller
 
         $published = Article::whereHas('status', function ($q) {
             $q->where('name', 'published');
-        })->get();
+        })->withCount('comments')->with('writer', 'category', 'comments.user')->get();
 
         $categories = \App\Models\Category::orderBy('name')->get();
         

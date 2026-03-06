@@ -65,5 +65,11 @@ Route::middleware(['auth','role:student'])->prefix('student')->name('student.')-
     Route::post('/articles/{article}/comment', [\App\Http\Controllers\StudentController::class, 'comment'])->name('articles.comment');
 });
 
+// Notification routes
+Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::post('/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+    Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+});
+
 require __DIR__.'/auth.php';
 require __DIR__.'/sample.php';

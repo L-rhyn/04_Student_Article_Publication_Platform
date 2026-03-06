@@ -163,6 +163,12 @@ class WriterController extends Controller
         }
 
         $article->load('status', 'category');
+        
+        // Load comments with user relationships for published articles
+        if ($article->status->name === 'published') {
+            $article->load(['comments.user']);
+        }
+        
         $categories = \App\Models\Category::orderBy('name')->get();
         
         return Inertia::render('Writer/ArticleView', compact('article', 'categories'));
@@ -198,9 +204,7 @@ class WriterController extends Controller
             abort(403);
         }
 
-        $article->load(['status', 'category', 'comments' => function($query) {
-            $query->with('user')->where('content', 'like', '%revision%');
-        }]);
+        $article->load(['status', 'category', 'comments.user']);
         $categories = \App\Models\Category::orderBy('name')->get();
         
         return Inertia::render('Writer/ArticleRevise', compact('article', 'categories'));

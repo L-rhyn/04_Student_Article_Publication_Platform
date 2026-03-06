@@ -38,7 +38,23 @@ class EditorController extends Controller
         })->get();
 
         $categories = \App\Models\Category::orderBy('name')->get();
-        return Inertia::render('Editor/Dashboard', compact('pending','published','categories'));
+        
+        // Get notifications for editors
+        $notifications = [];
+        try {
+            $notifications = $user->notifications()
+                ->whereIn('type', [
+                    \App\Notifications\ArticleSubmittedNotification::class,
+                    \App\Notifications\ArticleRevisedNotification::class
+                ])
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        } catch (\Exception $e) {
+            // Notifications table doesn't exist yet, continue without notifications
+        }
+        
+        return Inertia::render('Editor/Dashboard', compact('pending','published','categories','notifications'));
     }
 
     public function review(Article $article)

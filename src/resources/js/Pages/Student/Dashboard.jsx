@@ -33,6 +33,7 @@ import {
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import HomeIcon from '@mui/icons-material/Home';
 import { Inertia } from '@inertiajs/inertia';
 import SendIcon from '@mui/icons-material/Send';
 import CommentIcon from '@mui/icons-material/Comment';
@@ -46,10 +47,11 @@ const STATUS_COLORS = {
 
 const DRAWER_WIDTH = 280;
 const THEME = {
-    primary: '#4f46e5',
+    primary: '#00b4d8',
     success: '#16a34a',
-    warning: '#ea580c',
     surface: 'rgba(255, 255, 255, 0.95)',
+    secondary: '#0077b6',
+    dark: '#03045e',
 };
 
 export default function Dashboard({ articles, comments, categories: serverCategories, auth }) {
@@ -168,7 +170,7 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                                                         onClick={() => handleOpenDialog(article)}
                                                         sx={{
                                                             color: 'white',
-                                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
                                                             fontWeight: 600,
                                                             borderRadius: '6px',
                                                         }}
@@ -272,21 +274,75 @@ export default function Dashboard({ articles, comments, categories: serverCatego
             <AppBar
                 position="fixed"
                 sx={{
-                    background: `linear-gradient(135deg, ${THEME.primary} 0%, #614ce1 100%)`,
-                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.15)',
+                    background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.secondary} 100%)`,
+                    boxShadow: '0 8px 32px rgba(0, 180, 216, 0.15)',
                     zIndex: 1201,
                     backdropFilter: 'blur(10px)',
+                    height: 80
                 }}
             >
-                <Toolbar>
-                    <Typography variant="h6" sx={{ fontWeight: 800, flexGrow: 1, fontSize: '1.1rem', letterSpacing: '-0.3px' }}>
+                <Toolbar sx={{ minHeight: 80 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800, flexGrow: 1, fontSize: '1.8rem', letterSpacing: '-0.3px' }}>
                         Student Dashboard
                     </Typography>
+                    
+                    {/* Home Button */}
+                    <IconButton
+                        onClick={() => Inertia.visit('/')}
+                        sx={{ 
+                            color: 'white', 
+                            mr: 2,
+                            width: 48,
+                            height: 48,
+                            background: 'rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                background: 'rgba(255,255,255,0.25)',
+                                transform: 'scale(1.05)',
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                            },
+                            '&:active': {
+                                transform: 'scale(0.95)',
+                            }
+                        }}
+                        title="Home"
+                    >
+                        <HomeIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                    
                     <IconButton
                         onClick={(e) => setProfileAnchor(e.currentTarget)}
-                        sx={{ color: 'white', ml: 2 }}
+                        sx={{ 
+                            color: 'white', 
+                            ml: 2,
+                            width: 48,
+                            height: 48,
+                            background: 'rgba(255,255,255,0.25)',
+                            backdropFilter: 'blur(10px)',
+                            border: '2px solid rgba(255,255,255,0.3)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                background: 'rgba(255,255,255,0.35)',
+                                transform: 'scale(1.05)',
+                                boxShadow: '0 6px 25px rgba(0,0,0,0.25)',
+                            },
+                            '&:active': {
+                                transform: 'scale(0.95)',
+                            }
+                        }}
                     >
-                        <Avatar sx={{ background: 'rgba(255,255,255,0.2)', width: 32, height: 32 }}>
+                        <Avatar sx={{ 
+                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)', 
+                            width: 36, 
+                            height: 36,
+                            fontWeight: 'bold',
+                            fontSize: '1rem',
+                            border: '2px solid rgba(255,255,255,0.5)'
+                        }}>
                             {auth?.user?.name?.charAt(0) || 'U'}
                         </Avatar>
                     </IconButton>
@@ -294,18 +350,29 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                         anchorEl={profileAnchor}
                         open={Boolean(profileAnchor)}
                         onClose={() => setProfileAnchor(null)}
+                        PaperProps={{
+                            sx: {
+                                minWidth: 250,
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                                border: '1px solid rgba(0, 0, 0, 0.08)',
+                            }
+                        }}
                     >
                         <MenuItem disabled>
                             <Typography variant="caption" sx={{ fontWeight: 600 }}>{auth?.user?.name}</Typography>
                         </MenuItem>
                         <Divider />
-                        <MenuItem onClick={() => setProfileAnchor(null)}>
+                        <MenuItem onClick={() => {
+                            setProfileAnchor(null);
+                            Inertia.get(route('profile.edit'));
+                        }}>
                             <AccountCircleIcon sx={{ mr: 1, fontSize: 18 }} />
                             Profile
                         </MenuItem>
                         <MenuItem onClick={() => {
                             setProfileAnchor(null);
-                            window.location.href = '/sample/logout';
+                            Inertia.post('/logout');
                         }}>
                             <LogoutIcon sx={{ mr: 1, fontSize: 18, color: '#e65100' }} />
                             Log Out
@@ -346,7 +413,7 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                         boxSizing: 'border-box',
                         background: 'white',
                         borderRight: '1px solid #e2e8f0',
-                        mt: '64px',
+                        mt: '80px',
                     },
                 }}
             >
@@ -397,7 +464,7 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    mt: '64px',
+                    mt: '80px',
                     p: 3,
                     display: 'flex',
                     flexDirection: 'column',
@@ -411,7 +478,7 @@ export default function Dashboard({ articles, comments, categories: serverCatego
 
             {/* Comment Dialog */}
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+                <DialogTitle sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)', color: 'white' }}>
                     Comment on: {selectedArticle?.title}
                 </DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
@@ -434,7 +501,7 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                         variant="contained"
                         startIcon={<SendIcon />}
                         sx={{
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
                             fontWeight: 700,
                         }}
                     >

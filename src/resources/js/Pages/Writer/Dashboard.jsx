@@ -34,6 +34,7 @@ import {
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import HomeIcon from '@mui/icons-material/Home';
 import JoditEditor from 'jodit-react';
 import EditIcon from '@mui/icons-material/Edit';
 import SendIcon from '@mui/icons-material/Send';
@@ -48,7 +49,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 
 const STATUS_COLORS = {
-    draft: { bg: '#f0f4ff', text: '#4f46e5', border: '#e0e7ff' },
+    draft: { bg: '#e3f2fd', text: '#00b4d8', border: '#b3e5fc' },
     submitted: { bg: '#f0fdf4', text: '#16a34a', border: '#dcfce7' },
     needs_revision: { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
     published: { bg: '#f8fafc', text: '#64748b', border: '#e2e8f0' },
@@ -56,10 +57,12 @@ const STATUS_COLORS = {
 
 const DRAWER_WIDTH = 280;
 const THEME = {
-    primary: '#4f46e5',
+    primary: '#00b4d8',
+    secondary: '#0077b6',
     success: '#16a34a',
     warning: '#ea580c',
     surface: 'rgba(255, 255, 255, 0.95)',
+    dark: '#03045e',
 };
 
 export default function Dashboard({ articles, categories, auth, notifications }) {
@@ -105,7 +108,13 @@ export default function Dashboard({ articles, categories, auth, notifications })
                             
                             <Grid container spacing={3}>
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ p: 3, borderRadius: '12px', textAlign: 'center' }}>
+                                    <Card sx={{ 
+                                        p: 3, 
+                                        borderRadius: '12px', 
+                                        textAlign: 'center',
+                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
+                                        border: '1px solid #e2e8f0'
+                                    }}>
                                         <CardContent>
                                             <Typography variant="h2" sx={{ color: '#4f46e5', mb: 2 }}>
                                                 {draftArticles.length}
@@ -121,7 +130,13 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                 </Grid>
                                 
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ p: 3, borderRadius: '12px', textAlign: 'center' }}>
+                                    <Card sx={{ 
+                                        p: 3, 
+                                        borderRadius: '12px', 
+                                        textAlign: 'center',
+                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
+                                        border: '1px solid #e2e8f0'
+                                    }}>
                                         <CardContent>
                                             <Typography variant="h2" sx={{ color: '#16a34a', mb: 2 }}>
                                                 {submittedArticles.length}
@@ -137,7 +152,13 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                 </Grid>
                                 
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ p: 3, borderRadius: '12px', textAlign: 'center' }}>
+                                    <Card sx={{ 
+                                        p: 3, 
+                                        borderRadius: '12px', 
+                                        textAlign: 'center',
+                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
+                                        border: '1px solid #e2e8f0'
+                                    }}>
                                         <CardContent>
                                             <Typography variant="h2" sx={{ color: '#ea580c', mb: 2 }}>
                                                 {revisedArticles.length}
@@ -154,7 +175,12 @@ export default function Dashboard({ articles, categories, auth, notifications })
                             
                             <Grid container spacing={3} sx={{ mt: 4 }}>
                                 <Grid item xs={12}>
-                                    <Card sx={{ p: 4, borderRadius: '12px' }}>
+                                    <Card sx={{ 
+                                        p: 4, 
+                                        borderRadius: '12px',
+                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
+                                        border: '1px solid #e2e8f0'
+                                    }}>
                                         <CardContent>
                                             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: '#111827' }}>
                                                 Recent Activity
@@ -282,15 +308,15 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                         variant="contained"
                                         size="large"
                                         sx={{
-                                            background: `linear-gradient(135deg, ${THEME.primary} 0%, #614ce1 100%)`,
+                                            background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.secondary} 100%)`,
                                             fontWeight: 700,
                                             textTransform: 'none',
                                             borderRadius: '10px',
                                             py: 1.5,
                                             fontSize: '1rem',
-                                            boxShadow: `0 4px 15px rgba(79, 70, 229, 0.3)`,
+                                            boxShadow: `0 4px 15px rgba(0, 180, 216, 0.3)`,
                                             '&:hover': {
-                                                boxShadow: `0 6px 25px rgba(79, 70, 229, 0.4)`,
+                                                boxShadow: `0 6px 25px rgba(0, 180, 216, 0.4)`,
                                             },
                                         }}
                                     >
@@ -330,7 +356,7 @@ export default function Dashboard({ articles, categories, auth, notifications })
                         <Box>
                             <Box sx={{ mb: 4 }}>
                                 <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
-                                    My Drafts
+                                    Drafts
                                 </Typography>
                                 <Typography variant="body2" sx={{ mb: 3, color: '#6b7280' }}>
                                     You have {draftArticles.length} draft{draftArticles.length !== 1 ? 's' : ''}
@@ -360,7 +386,11 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                 />
                             </Box>
                             {filteredDraftArticles.length === 0 ? (
-                                <Card sx={{ borderRadius: '12px' }}>
+                                <Card sx={{ 
+                                        borderRadius: '12px',
+                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
+                                        border: '1px solid #e2e8f0'
+                                    }}>
                                     <CardContent sx={{ textAlign: 'center', py: 6 }}>
                                         <Typography color="textSecondary">
                                             {categorySearch ? ' No drafts found matching your search.' : ' No drafts yet. Start creating!'}
@@ -391,9 +421,11 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                                     border: '1px solid #e2e8f0',
                                                     minHeight: 340, // FORCE equal height
                                                     transition: 'all 0.25s ease',
+                                                    background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 50%, #f0fdfa 100%)',
                                                     '&:hover': {
                                                         transform: 'translateY(-6px)',
-                                                        boxShadow: '0 12px 30px rgba(79, 70, 229, 0.15)',
+                                                        boxShadow: '0 12px 30px rgba(0, 180, 216, 0.15)',
+                                                        border: '1px solid #00b4d8',
                                                     },
                                                 }}
                                             >
@@ -533,7 +565,11 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                 </Typography>
                             </Box>
                             {submittedArticles.length === 0 && revisedArticles.length === 0 ? (
-                                <Card sx={{ borderRadius: '12px' }}>
+                                <Card sx={{ 
+                                        borderRadius: '12px',
+                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
+                                        border: '1px solid #e2e8f0'
+                                    }}>
                                     <CardContent sx={{ textAlign: 'center', py: 6 }}>
                                         <Typography color="textSecondary">
                                             📤 No submitted articles yet.
@@ -549,9 +585,11 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                                     borderRadius: '12px',
                                                     border: '1px solid #e2e8f0',
                                                     transition: 'all 0.3s ease',
+                                                    background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 50%, #f0fdfa 100%)',
                                                     '&:hover': {
                                                         transform: 'translateX(4px)',
-                                                        boxShadow: '0 8px 20px rgba(102, 126, 234, 0.1)',
+                                                        boxShadow: '0 8px 20px rgba(0, 180, 216, 0.15)',
+                                                        border: '1px solid #00b4d8',
                                                     },
                                                 }}
                                             >
@@ -614,14 +652,15 @@ export default function Dashboard({ articles, categories, auth, notifications })
             <AppBar
                 position="fixed"
                 sx={{
-                    background: `linear-gradient(135deg, ${THEME.primary} 0%, #614ce1 100%)`,
-                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.15)',
+                    background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.secondary} 100%)`,
+                    boxShadow: '0 8px 32px rgba(0, 180, 216, 0.15)',
                     zIndex: 1201,
                     backdropFilter: 'blur(10px)',
+                    height: 80
                 }}
             >
-                <Toolbar>
-                    <Typography variant="h6" sx={{ fontWeight: 800, flexGrow: 1, fontSize: '1.1rem', letterSpacing: '-0.3px' }}>
+                <Toolbar sx={{ minHeight: 80 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800, flexGrow: 1, fontSize: '1.8rem', letterSpacing: '-0.3px' }}>
                          Writer Dashboard
                     </Typography>
                     
@@ -630,9 +669,9 @@ export default function Dashboard({ articles, categories, auth, notifications })
                         onClick={(e) => setNotificationAnchor(e.currentTarget)}
                         sx={{ 
                             color: 'white', 
-                            mr: 1,
-                            width: 40,
-                            height: 40,
+                            mr: 2,
+                            width: 48,
+                            height: 48,
                             background: 'rgba(255,255,255,0.15)',
                             backdropFilter: 'blur(10px)',
                             border: '2px solid rgba(255,255,255,0.2)',
@@ -660,11 +699,35 @@ export default function Dashboard({ articles, categories, auth, notifications })
                             }}
                         >
                             {unreadCount > 0 ? (
-                                <NotificationsIcon sx={{ fontSize: 20 }} />
+                                <NotificationsIcon sx={{ fontSize: 24 }} />
                             ) : (
-                                <NotificationsNoneIcon sx={{ fontSize: 20 }} />
+                                <NotificationsNoneIcon sx={{ fontSize: 24 }} />
                             )}
                         </Badge>
+                    </IconButton>
+                    
+                    {/* Home Button */}
+                    <IconButton
+                        onClick={() => Inertia.visit('/')}
+                        sx={{ 
+                            color: 'white', 
+                            mr: 2,
+                            width: 48,
+                            height: 48,
+                            background: 'rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(10px)',
+                            border: '2px solid rgba(255,255,255,0.2)',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                background: 'rgba(255,255,255,0.25)',
+                                transform: 'scale(1.05)',
+                                boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                            }
+                        }}
+                        title="Home"
+                    >
+                        <HomeIcon sx={{ fontSize: 24 }} />
                     </IconButton>
                     
                     <IconButton
@@ -690,7 +753,7 @@ export default function Dashboard({ articles, categories, auth, notifications })
                         }}
                     >
                         <Avatar sx={{ 
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)', 
                             width: 36, 
                             height: 36,
                             fontWeight: 'bold',
@@ -704,6 +767,14 @@ export default function Dashboard({ articles, categories, auth, notifications })
                         anchorEl={profileAnchor}
                         open={Boolean(profileAnchor)}
                         onClose={() => setProfileAnchor(null)}
+                        PaperProps={{
+                            sx: {
+                                minWidth: 250,
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                                border: '1px solid rgba(0, 0, 0, 0.08)',
+                            }
+                        }}
                     >
                         <MenuItem disabled>
                             <Typography variant="caption" sx={{ fontWeight: 600 }}>{auth?.user?.name}</Typography>
@@ -865,7 +936,7 @@ export default function Dashboard({ articles, categories, auth, notifications })
                         boxSizing: 'border-box',
                         background: 'white',
                         borderRight: '1px solid #e2e8f0',
-                        mt: '64px',
+                        mt: '80px',
                     },
                 }}
             >
@@ -948,7 +1019,7 @@ export default function Dashboard({ articles, categories, auth, notifications })
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    mt: '64px',
+                    mt: '80px',
                     p: 3,
                     display: 'flex',
                     flexDirection: 'column',

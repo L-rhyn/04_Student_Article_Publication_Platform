@@ -73,33 +73,40 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
 
             {/* Navigation Bar */}
             <AppBar position="static" sx={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                height: 80
             }}>
-                <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: 80 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Button
                             component={Link}
                             href={route('dashboard')}
                             variant="text"
-                            size="small"
-                            sx={{ color: 'white', minWidth: 'auto' }}
+                            size="large"
+                            sx={{ color: 'white', minWidth: 'auto', fontSize: '1rem', py: 1 }}
                         >
-                            <ArrowBack sx={{ mr: 1 }} />
-                            Back
+                            <ArrowBack sx={{ mr: 1, fontSize: 24 }} />
+                
                         </Button>
-                        <AutoStories sx={{ fontSize: 32, color: 'white' }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
+                        <AutoStories sx={{ fontSize: 40, color: 'white', mr: 2 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white', fontSize: '1.5rem' }}>
                             Profile Settings
                         </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 3 }}>
                         <Button
                             component={Link}
                             href={route('dashboard')}
                             variant="outlined"
-                            size="small"
-                            sx={{ color: 'white', borderColor: 'white' }}
+                            size="large"
+                            sx={{ 
+                                color: 'white', 
+                                borderColor: 'white',
+                                fontSize: '1rem',
+                                py: 1,
+                                px: 2
+                            }}
                         >
                             Dashboard
                         </Button>
@@ -107,9 +114,12 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
                             component="button"
                             onClick={() => router.post(route('logout'))}
                             variant="text"
-                            size="small"
+                            size="large"
                             sx={{ 
                                 color: 'white',
+                                fontSize: '1rem',
+                                py: 1,
+                                px: 2,
                                 '&:hover': {
                                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                                 }
@@ -125,7 +135,7 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
             <Box sx={{ 
                 minHeight: '100vh', 
                 backgroundColor: 'background.default',
-                pt: 8,
+                pt: 10,
                 pb: 4
             }}>
                 <Container maxWidth="md">
@@ -137,7 +147,7 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
                                 height: 80, 
                                 mx: 'auto', 
                                 mb: 2,
-                                backgroundColor: 'primary.main',
+                                backgroundColor: '#00b4d8',
                                 fontSize: '2rem'
                             }}
                         >
@@ -160,7 +170,7 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
                             <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                                 <CardContent sx={{ p: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <Person sx={{ mr: 2, color: 'primary.main' }} />
+                                        <Person sx={{ mr: 2, color: '#00b4d8' }} />
                                         <Typography variant="h6" sx={{ fontWeight: '600' }}>
                                             Profile Information
                                         </Typography>
@@ -210,9 +220,9 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
                                                     disabled={profileForm.processing}
                                                     startIcon={<Save />}
                                                     sx={{
-                                                        background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+                                                        background: 'linear-gradient(45deg, #00b4d8 0%, #0077b6 100%)',
                                                         '&:hover': {
-                                                            background: 'linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%)',
+                                                            background: 'linear-gradient(45deg, #0096c7 0%, #005f8a 100%)',
                                                         }
                                                     }}
                                                 >
@@ -230,7 +240,7 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
                             <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                                 <CardContent sx={{ p: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <Lock sx={{ mr: 2, color: 'primary.main' }} />
+                                        <Lock sx={{ mr: 2, color: '#00b4d8' }} />
                                         <Typography variant="h6" sx={{ fontWeight: '600' }}>
                                             Update Password
                                         </Typography>
@@ -301,9 +311,9 @@ export default function Profile({ auth, mustVerifyEmail, status }) {
                                                     disabled={passwordForm.processing}
                                                     startIcon={<Save />}
                                                     sx={{
-                                                        background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+                                                        background: 'linear-gradient(45deg, #00b4d8 0%, #0077b6 100%)',
                                                         '&:hover': {
-                                                            background: 'linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%)',
+                                                            background: 'linear-gradient(45deg, #0096c7 0%, #005f8a 100%)',
                                                         }
                                                     }}
                                                 >

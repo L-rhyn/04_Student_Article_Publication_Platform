@@ -59,7 +59,7 @@ export default function Register() {
         sx={{
           display: 'flex',
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
           alignItems: 'center',
           justifyContent: 'center',
           p: 2,
@@ -122,16 +122,16 @@ export default function Register() {
                         mt: 2,
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.1)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.1)',
                         },
                         '&:focus-within': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.15)',
                         },
                       }}
                     >
-                      <Person sx={{ color: '#667eea', mr: 1.5, fontSize: 24 }} />
+                      <Person sx={{ color: '#00b4d8', mr: 1.5, fontSize: 24 }} />
                       <TextField
                         label="Name"
                         variant="standard"
@@ -165,16 +165,16 @@ export default function Register() {
                         mt: 2,
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.1)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.1)',
                         },
                         '&:focus-within': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.15)',
                         },
                       }}
                     >
-                      <Email sx={{ color: '#667eea', mr: 1.5, fontSize: 24 }} />
+                      <Email sx={{ color: '#00b4d8', mr: 1.5, fontSize: 24 }} />
                       <TextField
                         label="Email"
                         type="email"
@@ -209,16 +209,16 @@ export default function Register() {
                         mt: 2,
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.1)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.1)',
                         },
                         '&:focus-within': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.15)',
                         },
                       }}
                     >
-                      <Lock sx={{ color: '#667eea', mr: 1.5, fontSize: 24 }} />
+                      <Lock sx={{ color: '#00b4d8', mr: 1.5, fontSize: 24 }} />
                       <TextField
                         label="Password"
                         variant="standard"
@@ -236,7 +236,7 @@ export default function Register() {
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                               sx={{
-                                color: '#667eea',
+                                color: '#00b4d8',
                                 transition: 'all 0.2s ease',
                                 '&:hover': { transform: 'scale(1.1)' },
                               }}
@@ -266,16 +266,16 @@ export default function Register() {
                         mt: 2,
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.1)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.1)',
                         },
                         '&:focus-within': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.15)',
                         },
                       }}
                     >
-                      <Lock sx={{ color: '#667eea', mr: 1.5, fontSize: 24 }} />
+                      <Lock sx={{ color: '#00b4d8', mr: 1.5, fontSize: 24 }} />
                       <TextField
                         label="Confirm Password"
                         variant="standard"
@@ -293,7 +293,7 @@ export default function Register() {
                               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                               edge="end"
                               sx={{
-                                color: '#667eea',
+                                color: '#00b4d8',
                                 transition: 'all 0.2s ease',
                                 '&:hover': { transform: 'scale(1.1)' },
                               }}
@@ -323,22 +323,22 @@ export default function Register() {
                         mt: 2,
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.1)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.1)',
                         },
                         '&:focus-within': {
-                          borderColor: '#667eea',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)',
+                          borderColor: '#00b4d8',
+                          boxShadow: '0 4px 12px rgba(0, 180, 216, 0.15)',
                         },
                       }}
                     >
-                      <PersonAdd sx={{ color: '#667eea', mr: 1.5, fontSize: 24 }} />
+                      <PersonAdd sx={{ color: '#00b4d8', mr: 1.5, fontSize: 24 }} />
                       <FormControl fullWidth variant="standard">
                         <InputLabel
                           sx={{
                             color: '#666',
                             '&.Mui-focused': {
-                              color: '#667eea',
+                              color: '#00b4d8',
                             },
                           }}
                         >
@@ -380,7 +380,7 @@ export default function Register() {
                         type="submit"
                         variant="contained"
                         sx={{
-                          bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          bgcolor: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
                           color: 'white',
                           fontWeight: 600,
                           py: 1,
@@ -389,7 +389,7 @@ export default function Register() {
                           transition: 'all 0.3s ease',
                           '&:hover': {
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 8px 20px rgba(102, 126, 234, 0.3)',
+                            boxShadow: '0 8px 20px rgba(0, 180, 216, 0.3)',
                           },
                           '&:disabled': {
                             opacity: 0.6,
@@ -411,7 +411,7 @@ export default function Register() {
             <Box
               sx={{
                 flex: 1,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
@@ -513,7 +513,7 @@ export default function Register() {
                           sx={{
                             mt: 2,
                             bgcolor: 'white',
-                            color: '#667eea',
+                            color: '#00b4d8',
                             fontWeight: 700,
                             py: 1.5,
                             px: 5,

@@ -220,7 +220,7 @@ class WriterController extends Controller
         try {
             $editors = \App\Models\User::role('editor')->get();
             foreach ($editors as $editor) {
-                $editor->notify(new \App\Notifications\ArticleSubmittedNotification($article));
+                $editor->notify(new \App\Notifications\ArticleRevisedNotification($article));
             }
         } catch (\Exception $e) {
             // Notifications table doesn't exist yet, continue without notification

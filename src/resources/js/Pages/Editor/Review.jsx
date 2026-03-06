@@ -39,16 +39,52 @@ export default function Review({ article }) {
             alert('Please provide comments for the revision request.');
             return;
         }
+        
+        if (!confirm('Are you sure you want to request revision? This will notify the writer.')) {
+            return;
+        }
+        
         setLoading(true);
-        Inertia.post(route('editor.articles.requestRevision', article.id), { comments });
+        
+        Inertia.post(route('editor.articles.requestRevision', article.id), { 
+            comments: comments.trim() 
+        }, {
+            onSuccess: () => {
+                alert('Revision request sent successfully! The writer has been notified.');
+                setComments('');
+                setLoading(false);
+            },
+            onError: (errors) => {
+                console.error('Revision request error:', errors);
+                alert('Error sending revision request. Please try again.');
+                setLoading(false);
+            },
+            onFinish: () => {
+                setLoading(false);
+            }
+        });
     };
 
     const publish = () => {
-        if (!confirm('Are you sure you want to publish this article?')) {
+        if (!confirm('Are you sure you want to publish this article? This action cannot be undone.')) {
             return;
         }
         setLoading(true);
-        Inertia.post(route('editor.articles.publish', article.id));
+        
+        Inertia.post(route('editor.articles.publish', article.id), {}, {
+            onSuccess: () => {
+                alert('Article published successfully!');
+                setLoading(false);
+            },
+            onError: (errors) => {
+                console.error('Publish error:', errors);
+                alert('Error publishing article. Please try again.');
+                setLoading(false);
+            },
+            onFinish: () => {
+                setLoading(false);
+            }
+        });
     };
 
     const handleBack = () => {
@@ -56,13 +92,13 @@ export default function Review({ article }) {
     };
 
     return (
-        <Box sx={{ background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', minHeight: '100vh', pb: 4 }}>
+        <Box sx={{ background: 'linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%)', minHeight: '100vh', pb: 4 }}>
             {/* Header */}
             <AppBar
                 position="sticky"
                 sx={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)',
+                    background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
+                    boxShadow: '0 4px 20px rgba(0, 180, 216, 0.2)',
                 }}
             >
                 <Toolbar>
@@ -74,7 +110,7 @@ export default function Review({ article }) {
                             mr: 2,
                         }}
                     >
-                        Back
+                    
                     </Button>
                     <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -87,10 +123,10 @@ export default function Review({ article }) {
                 </Toolbar>
             </AppBar>
 
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Grid container spacing={3}>
                     {/* Article Content */}
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12} lg={8}>
                         <Card
                             sx={{
                                 borderRadius: '12px',
@@ -104,7 +140,7 @@ export default function Review({ article }) {
                                     variant="h4"
                                     sx={{
                                         fontWeight: 700,
-                                        color: '#1e293b',
+                                        color: '#0077b6',
                                         mb: 1,
                                     }}
                                 >
@@ -143,22 +179,25 @@ export default function Review({ article }) {
                     </Grid>
 
                     {/* Review Panel */}
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} lg={4}>
                         <Paper
                             sx={{
                                 p: 3,
                                 borderRadius: '12px',
-                                background: 'white',
+                                background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
+                                border: '1px solid #e2e8f0',
                                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                                 position: 'sticky',
                                 top: 100,
+                                height: 'fit-content',
+                                minHeight: 600,
                             }}
                         >
                             <Typography
                                 variant="h6"
                                 sx={{
                                     fontWeight: 700,
-                                    color: '#1e293b',
+                                    color: '#0077b6',
                                     mb: 2,
                                 }}
                             >
@@ -180,17 +219,21 @@ export default function Review({ article }) {
                                 Revision Comments
                             </Typography>
                             <TextField
-                                placeholder="Add comments for the writer (optional)"
+                                placeholder="Add detailed comments for the writer about the revisions needed..."
                                 fullWidth
                                 multiline
-                                rows={6}
+                                rows={12}
                                 value={comments}
                                 onChange={(e) => setComments(e.target.value)}
                                 variant="outlined"
                                 sx={{
-                                    mb: 2,
+                                    mb: 3,
                                     '& .MuiOutlinedInput-root': {
-                                        borderRadius: '8px',
+                                        borderRadius: '10px',
+                                        backgroundColor: 'white',
+                                        '&:hover fieldset': { borderColor: '#00b4d8' },
+                                        '&.Mui-focused fieldset': { borderColor: '#00b4d8' },
+                                        fontSize: '0.95rem',
                                     },
                                 }}
                             />
@@ -203,17 +246,18 @@ export default function Review({ article }) {
                                     onClick={requestRevision}
                                     disabled={loading || !comments.trim()}
                                     sx={{
-                                        color: '#e65100',
-                                        borderColor: '#e65100',
+                                        color: '#0077b6',
+                                        borderColor: '#0077b6',
                                         fontWeight: 700,
                                         textTransform: 'none',
                                         py: 1.2,
                                         '&:hover': {
-                                            background: '#fff3e0',
+                                            background: 'rgba(0, 119, 182, 0.04)',
+                                            borderColor: '#005f8a',
                                         },
                                     }}
                                 >
-                                    Request Revision
+                                    {loading ? 'Sending...' : 'Request Revision'}
                                 </Button>
                                 <Button
                                     fullWidth
@@ -222,13 +266,16 @@ export default function Review({ article }) {
                                     onClick={publish}
                                     disabled={loading}
                                     sx={{
-                                        background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                                        background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
                                         fontWeight: 700,
                                         textTransform: 'none',
                                         py: 1.2,
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #0096c7 0%, #005f8a 100%)',
+                                        },
                                     }}
                                 >
-                                    Approve & Publish
+                                    {loading ? 'Publishing...' : 'Approve & Publish'}
                                 </Button>
                             </Box>
 

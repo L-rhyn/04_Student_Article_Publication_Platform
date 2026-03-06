@@ -30,39 +30,77 @@ import {
     InputAdornment,
     Badge,
     ListItemText as MuiListItemText,
+    Zoom,
+    Grow,
+    Slide,
+    alpha
 } from '@mui/material';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import HomeIcon from '@mui/icons-material/Home';
-import JoditEditor from 'jodit-react';
-import EditIcon from '@mui/icons-material/Edit';
-import SendIcon from '@mui/icons-material/Send';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
-import CreateIcon from '@mui/icons-material/Create';
-import DoneIcon from '@mui/icons-material/Done';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import {
+    AccountCircle as AccountCircleIcon,
+    Logout as LogoutIcon,
+    SwapHoriz as SwapHorizIcon,
+    Home as HomeIcon,
+    Edit as EditIcon,
+    Send as SendIcon,
+    Visibility as VisibilityIcon,
+    Search as SearchIcon,
+    Add as AddIcon,
+    Create as CreateIcon,
+    Done as DoneIcon,
+    MoreVert as MoreVertIcon,
+    Dashboard as DashboardIcon,
+    Notifications as NotificationsIcon,
+    NotificationsNone as NotificationsNoneIcon,
+    Brush as BrushIcon,
+    AutoStories as AutoStoriesIcon,
+    EmojiEmotions as EmojiIcon,
+    Rocket as RocketIcon,
+    Celebration as CelebrationIcon,
+    Star as StarIcon,
+    Forest as ForestIcon,
+    Pets as PetsIcon,
+    Cake as CakeIcon,
+    MusicNote as MusicIcon,
+    ThumbUp as ThumbUpIcon,
+    Lightbulb as LightbulbIcon,
+    WbSunny as SunIcon,
+    Cloud as CloudIcon,
+    Menu as MenuIcon,
+    Close as CloseIcon
+} from '@mui/icons-material';
 
 const STATUS_COLORS = {
-    draft: { bg: '#e3f2fd', text: '#00b4d8', border: '#b3e5fc' },
-    submitted: { bg: '#f0fdf4', text: '#16a34a', border: '#dcfce7' },
-    needs_revision: { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
-    published: { bg: '#f8fafc', text: '#64748b', border: '#e2e8f0' },
+    draft: { bg: '#FFE66D', text: '#FF6B6B', border: '#FF9F1C', icon: '✏️' },
+    submitted: { bg: '#4ECDC4', text: '#FFFFFF', border: '#6BAA6B', icon: '🚀' },
+    needs_revision: { bg: '#FF8A80', text: '#B22222', border: '#FF6B6B', icon: '🔄' },
+    published: { bg: '#9B6B9E', text: '#FFFFFF', border: '#6B8CFF', icon: '✨' },
 };
 
 const DRAWER_WIDTH = 280;
 const THEME = {
-    primary: '#00b4d8',
-    secondary: '#0077b6',
-    success: '#16a34a',
-    warning: '#ea580c',
+    primary: '#FF6B6B', // Coral red
+    secondary: '#4ECDC4', // Turquoise
+    accent: '#FFE66D', // Sunny yellow
+    purple: '#9B6B9E',
+    orange: '#FF9F1C',
+    pink: '#FF8A80',
+    green: '#6BAA6B',
+    blue: '#6B8CFF',
+    background: '#FFF9E6',
     surface: 'rgba(255, 255, 255, 0.95)',
-    dark: '#03045e',
+    text: '#4A4A4A',
+};
+
+// Fun character icons for categories
+const CATEGORY_ICONS = {
+    adventure: '🗺️',
+    fantasy: '🐉',
+    science: '🔬',
+    history: '🏛️',
+    art: '🎨',
+    music: '🎵',
+    nature: '🌿',
+    space: '🚀'
 };
 
 export default function Dashboard({ articles, categories, auth, notifications }) {
@@ -72,6 +110,21 @@ export default function Dashboard({ articles, categories, auth, notifications })
     const [categorySearch, setCategorySearch] = useState('');
     const [notificationAnchor, setNotificationAnchor] = useState(null);
     const [readNotifications, setReadNotifications] = useState(new Set());
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [floatingIcons] = useState(() => {
+        const icons = [
+            <BrushIcon />, <PetsIcon />, <CakeIcon />, <MusicIcon />,
+            <StarIcon />, <ForestIcon />, <SunIcon />, <CloudIcon />
+        ];
+        return icons.map((icon, i) => ({
+            icon,
+            left: Math.random() * 100,
+            top: Math.random() * 100,
+            delay: Math.random() * 5,
+            duration: 8 + Math.random() * 15,
+            size: 15 + Math.random() * 25
+        }));
+    });
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -88,6 +141,7 @@ export default function Dashboard({ articles, categories, auth, notifications })
     const draftArticles = articles.filter(a => a.status.name === 'draft');
     const submittedArticles = articles.filter(a => a.status.name === 'submitted');
     const revisedArticles = articles.filter(a => a.status.name === 'needs_revision');
+    const publishedArticles = articles.filter(a => a.status.name === 'published');
 
     // Filter draft articles by search (title or category)
     const filteredDraftArticles = draftArticles.filter(article => 
@@ -100,249 +154,461 @@ export default function Dashboard({ articles, categories, auth, notifications })
         switch (activeNav) {
             case 'dashboard':
                 return (
-                    <Fade in={activeNav === 'dashboard'}>
-                        <Container maxWidth="lg">
-                            <Typography variant="h4" sx={{ mb: 4, fontWeight: 800, color: '#111827' }}>
-                                Article Statistics
+                    <Fade in={activeNav === 'dashboard'} timeout={800}>
+                        <Box>
+                            {/* Welcome Banner */}
+                            <Paper
+                                sx={{
+                                    p: 4,
+                                    mb: 4,
+                                    borderRadius: 8,
+                                    background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.purple} 100%)`,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    border: `4px solid ${THEME.accent}`,
+                                    boxShadow: `8px 8px 0 ${alpha(THEME.primary, 0.3)}`
+                                }}
+                            >
+                                <Box sx={{ position: 'relative', zIndex: 2 }}>
+                                    <Typography
+                                        variant="h3"
+                                        sx={{
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            fontWeight: 'bold',
+                                            color: 'white',
+                                            mb: 2,
+                                            textShadow: '3px 3px 0 rgba(0,0,0,0.2)'
+                                        }}
+                                    >
+                                        Welcome back, {auth?.user?.name?.split(' ')[0]}! 🎨
+                                    </Typography>
+                                    <Typography
+                                        variant="h5"
+                                        sx={{
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            color: THEME.accent,
+                                            mb: 3
+                                        }}
+                                    >
+                                        Your imagination is the limit. What article will you create today?
+                                    </Typography>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => setActiveNav('create')}
+                                        startIcon={<RocketIcon />}
+                                        sx={{
+                                            bgcolor: THEME.accent,
+                                            color: THEME.primary,
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            fontSize: '1.2rem',
+                                            py: 1.5,
+                                            px: 4,
+                                            borderRadius: 40,
+                                            border: '3px solid white',
+                                            '&:hover': {
+                                                bgcolor: '#FFD93D',
+                                                transform: 'scale(1.05)'
+                                            }
+                                        }}
+                                    >
+                                        Start New Article
+                                    </Button>
+                                </Box>
+                                
+                                {/* Floating icons in banner */}
+                                <Box sx={{ position: 'absolute', top: 20, right: 20, opacity: 0.2 }}>
+                                    <AutoStoriesIcon sx={{ fontSize: 100, color: 'white' }} />
+                                </Box>
+                            </Paper>
+
+                            <Typography
+                                variant="h4"
+                                sx={{
+                                    fontFamily: '"Comic Sans MS", cursive',
+                                    fontWeight: 'bold',
+                                    color: THEME.primary,
+                                    mb: 4,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2
+                                }}
+                            >
+                                <StarIcon sx={{ color: THEME.accent, fontSize: 40 }} />
+                                Your Article Stats
+                                <StarIcon sx={{ color: THEME.accent, fontSize: 40 }} />
                             </Typography>
                             
-                            <Grid container spacing={3}>
+                            <Grid container spacing={4}>
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ 
-                                        p: 3, 
-                                        borderRadius: '12px', 
-                                        textAlign: 'center',
-                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                        <CardContent>
-                                            <Typography variant="h2" sx={{ color: '#4f46e5', mb: 2 }}>
-                                                {draftArticles.length}
-                                            </Typography>
-                                            <Typography variant="h6" sx={{ color: '#6b7280', mb: 1 }}>
-                                                Draft Articles
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Articles you're currently working on
-                                            </Typography>
-                                        </CardContent>
-                                    </Card>
+                                    <Zoom in timeout={500}>
+                                        <Card sx={{ 
+                                            p: 3, 
+                                            borderRadius: 8,
+                                            textAlign: 'center',
+                                            background: `linear-gradient(135deg, ${THEME.blue}20 0%, ${THEME.secondary}20 100%)`,
+                                            border: `4px solid ${THEME.blue}`,
+                                            boxShadow: `6px 6px 0 ${THEME.blue}`,
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px) translateX(-4px)',
+                                                boxShadow: `10px 10px 0 ${THEME.blue}`
+                                            }
+                                        }}>
+                                            <Box sx={{ position: 'absolute', top: 10, right: 10, fontSize: '2rem' }}>
+                                                📝
+                                            </Box>
+                                            <CardContent>
+                                                <Typography variant="h2" sx={{ color: THEME.blue, mb: 2, fontWeight: 'bold' }}>
+                                                    {draftArticles.length}
+                                                </Typography>
+                                                <Typography variant="h6" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                                    Drafts in Progress
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
                                 </Grid>
                                 
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ 
-                                        p: 3, 
-                                        borderRadius: '12px', 
-                                        textAlign: 'center',
-                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                        <CardContent>
-                                            <Typography variant="h2" sx={{ color: '#16a34a', mb: 2 }}>
-                                                {submittedArticles.length}
-                                            </Typography>
-                                            <Typography variant="h6" sx={{ color: '#6b7280', mb: 1 }}>
-                                                Submitted Articles
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Articles under review
-                                            </Typography>
-                                        </CardContent>
-                                    </Card>
+                                    <Zoom in timeout={700}>
+                                        <Card sx={{ 
+                                            p: 3, 
+                                            borderRadius: 8,
+                                            textAlign: 'center',
+                                            background: `linear-gradient(135deg, ${THEME.orange}20 0%, ${THEME.accent}20 100%)`,
+                                            border: `4px solid ${THEME.orange}`,
+                                            boxShadow: `6px 6px 0 ${THEME.orange}`,
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px) translateX(-4px)',
+                                                boxShadow: `10px 10px 0 ${THEME.orange}`
+                                            }
+                                        }}>
+                                            <Box sx={{ position: 'absolute', top: 10, right: 10, fontSize: '2rem' }}>
+                                                🚀
+                                            </Box>
+                                            <CardContent>
+                                                <Typography variant="h2" sx={{ color: THEME.orange, mb: 2, fontWeight: 'bold' }}>
+                                                    {submittedArticles.length}
+                                                </Typography>
+                                                <Typography variant="h6" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                                    Under Review
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
                                 </Grid>
                                 
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ 
-                                        p: 3, 
-                                        borderRadius: '12px', 
-                                        textAlign: 'center',
-                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                        <CardContent>
-                                            <Typography variant="h2" sx={{ color: '#ea580c', mb: 2 }}>
-                                                {revisedArticles.length}
-                                            </Typography>
-                                            <Typography variant="h6" sx={{ color: '#6b7280', mb: 1 }}>
-                                                Need Revision
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Articles requiring changes
-                                            </Typography>
-                                        </CardContent>
-                                    </Card>
+                                    <Zoom in timeout={900}>
+                                        <Card sx={{ 
+                                            p: 3, 
+                                            borderRadius: 8,
+                                            textAlign: 'center',
+                                            background: `linear-gradient(135deg, ${THEME.primary}20 0%, ${THEME.pink}20 100%)`,
+                                            border: `4px solid ${THEME.primary}`,
+                                            boxShadow: `6px 6px 0 ${THEME.primary}`,
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px) translateX(-4px)',
+                                                boxShadow: `10px 10px 0 ${THEME.primary}`
+                                            }
+                                        }}>
+                                            <Box sx={{ position: 'absolute', top: 10, right: 10, fontSize: '2rem' }}>
+                                                🔄
+                                            </Box>
+                                            <CardContent>
+                                                <Typography variant="h2" sx={{ color: THEME.primary, mb: 2, fontWeight: 'bold' }}>
+                                                    {revisedArticles.length}
+                                                </Typography>
+                                                <Typography variant="h6" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                                    Need Revision
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Zoom in timeout={1100}>
+                                        <Card sx={{ 
+                                            p: 3, 
+                                            borderRadius: 8,
+                                            textAlign: 'center',
+                                            background: `linear-gradient(135deg, ${THEME.green}20 0%, ${THEME.secondary}20 100%)`,
+                                            border: `4px solid ${THEME.green}`,
+                                            boxShadow: `6px 6px 0 ${THEME.green}`,
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px) translateX(-4px)',
+                                                boxShadow: `10px 10px 0 ${THEME.green}`
+                                            }
+                                        }}>
+                                            <Box sx={{ position: 'absolute', top: 10, right: 10, fontSize: '2rem' }}>
+                                                ✨
+                                            </Box>
+                                            <CardContent>
+                                                <Typography variant="h2" sx={{ color: THEME.green, mb: 2, fontWeight: 'bold' }}>
+                                                    {publishedArticles.length}
+                                                </Typography>
+                                                <Typography variant="h6" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                                    Published Stories
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
+                                </Grid>
                             </Grid>
                             
                             <Grid container spacing={3} sx={{ mt: 4 }}>
                                 <Grid item xs={12}>
-                                    <Card sx={{ 
-                                        p: 4, 
-                                        borderRadius: '12px',
-                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                        <CardContent>
-                                            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: '#111827' }}>
-                                                Recent Activity
-                                            </Typography>
-                                            
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                        Total Articles Created
-                                                    </Typography>
-                                                    <Typography variant="h4" sx={{ color: '#4f46e5' }}>
-                                                        {articles.length}
-                                                    </Typography>
-                                                </Box>
+                                    <Grow in timeout={1300}>
+                                        <Card sx={{ 
+                                            p: 4, 
+                                            borderRadius: 8,
+                                            background: `linear-gradient(135deg, ${THEME.accent}20 0%, ${THEME.secondary}20 100%)`,
+                                            border: `4px solid ${THEME.accent}`,
+                                            boxShadow: `6px 6px 0 ${THEME.accent}`
+                                        }}>
+                                            <CardContent>
+                                                <Typography variant="h5" sx={{ fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold', color: THEME.text, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <CelebrationIcon sx={{ color: THEME.primary }} />
+                                                    Your Writing Journey
+                                                    <CelebrationIcon sx={{ color: THEME.primary }} />
+                                                </Typography>
                                                 
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: '#f0f4ff', borderRadius: '8px' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                        Articles Published
-                                                    </Typography>
-                                                    <Typography variant="h4" sx={{ color: '#16a34a' }}>
-                                                        {articles.filter(a => a.status.name === 'published').length}
-                                                    </Typography>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                    <Paper sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'white', borderRadius: 4 }}>
+                                                        <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', fontWeight: 600 }}>
+                                                            Total Stories Created
+                                                        </Typography>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                            <Typography variant="h3" sx={{ color: THEME.blue, fontWeight: 'bold' }}>
+                                                                {articles.length}
+                                                            </Typography>
+                                                            <span style={{ fontSize: '2rem' }}>📚</span>
+                                                        </Box>
+                                                    </Paper>
+                                                    
+                                                    <Paper sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'white', borderRadius: 4 }}>
+                                                        <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', fontWeight: 600 }}>
+                                                            Stories Published
+                                                        </Typography>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                            <Typography variant="h3" sx={{ color: THEME.green, fontWeight: 'bold' }}>
+                                                                {publishedArticles.length}
+                                                            </Typography>
+                                                            <span style={{ fontSize: '2rem' }}>✨</span>
+                                                        </Box>
+                                                    </Paper>
                                                 </Box>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
+                                            </CardContent>
+                                        </Card>
+                                    </Grow>
                                 </Grid>
                             </Grid>
-                            </Grid>
-                        </Container>
+                        </Box>
                     </Fade>
                 );
-                
 
             case 'create':
                 return (
-                    <Fade in={activeNav === 'create'}>
+                    <Fade in={activeNav === 'create'} timeout={800}>
                         <Paper
                             sx={{
                                 p: 4,
-                                borderRadius: '16px',
-                                background: THEME.surface,
-                                boxShadow: '0 10px 40px rgba(31, 41, 55, 0.1)',
-                                border: '1px solid rgba(255, 255, 255, 0.8)',
-                                backdropFilter: 'blur(10px)',
+                                borderRadius: 8,
+                                background: THEME.background,
+                                boxShadow: `8px 8px 0 ${THEME.primary}`,
+                                border: `4px solid ${THEME.secondary}`,
                             }}
                         >
-                            <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
-                                Create New Article
+                            <Typography
+                                variant="h4"
+                                sx={{
+                                    fontFamily: '"Comic Sans MS", cursive',
+                                    fontWeight: 'bold',
+                                    color: THEME.primary,
+                                    mb: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2
+                                }}
+                            >
+                                <BrushIcon sx={{ fontSize: 40 }} />
+                                Create a New Article
+                                <BrushIcon sx={{ fontSize: 40 }} />
                             </Typography>
-                            <Typography variant="body2" sx={{ mb: 4, color: '#6b7280' }}>
-                                Share your thoughts with the world
+                            <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text, mb: 4 }}>
+                                Let your imagination run wild! ✨
                             </Typography>
+                            
                             <Box component="form" onSubmit={handleSubmit}>
-                                <TextField
-                                    label="Article Title"
-                                    fullWidth
-                                    placeholder="Enter a compelling title..."
-                                    value={form.title}
-                                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                    sx={{
-                                        mb: 3,
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: '10px',
-                                            backgroundColor: '#f9fafb',
-                                            '&:hover fieldset': { borderColor: THEME.primary },
-                                            '&.Mui-focused fieldset': { borderColor: THEME.primary },
-                                        },
-                                    }}
-                                    required
-                                    variant="outlined"
-                                />
-
-                                <Select
-                                    fullWidth
-                                    value={form.category_id}
-                                    onChange={(e) => setForm({ ...form, category_id: e.target.value ? Number(e.target.value) : '' })}
-                                    displayEmpty
-                                    renderValue={(selected) => {
-                                        if (!selected) {
-                                            return <Typography sx={{ color: '#9ca3af' }}>Select a category</Typography>;
-                                        }
-                                        const category = categories.find(cat => cat.id === selected);
-                                        return category ? category.name : '';
-                                    }}
-                                    sx={{
-                                        mb: 4,
-                                        borderRadius: '10px',
-                                        backgroundColor: '#f9fafb',
-                                        '& .MuiOutlinedInput-root': {
-                                            '&:hover fieldset': { borderColor: THEME.primary },
-                                            '&.Mui-focused fieldset': { borderColor: THEME.primary },
-                                        },
-                                    }}
-                                >
-                                    <MenuItem value="">
-                                        <Typography sx={{ color: '#9ca3af' }}>Select a category</Typography>
-                                    </MenuItem>
-                                    {categories.map((cat) => (
-                                        <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-                                    ))}
-                                </Select>
-
-                                <Typography sx={{ mb: 2, fontWeight: 700, color: '#111827', fontSize: '0.95rem' }}>
-                                    Article Content
-                                </Typography>
-                                <Paper
-                                    sx={{
-                                        mb: 4,
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden',
-                                        backgroundColor: '#fafbfc',
-                                    }}
-                                >
-                                    <JoditEditor
-                                        value={form.content}
-                                        onBlur={(newContent) => setForm({ ...form, content: newContent })}
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography
+                                        variant="subtitle1"
+                                        sx={{
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            color: THEME.purple,
+                                            mb: 1,
+                                            ml: 1
+                                        }}
+                                    >
+                                        📖 Article Title
+                                    </Typography>
+                                    <TextField
+                                        fullWidth
+                                        placeholder="Give your article a magical title..."
+                                        value={form.title}
+                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                bgcolor: 'white',
+                                                borderRadius: 40,
+                                                border: `3px solid ${THEME.secondary}`,
+                                                fontFamily: '"Comic Sans MS", cursive',
+                                                '&:hover fieldset': { borderColor: THEME.primary },
+                                                '&.Mui-focused fieldset': { borderColor: THEME.accent },
+                                            },
+                                        }}
+                                        required
+                                        variant="outlined"
                                     />
-                                </Paper>
+                                </Box>
 
-                                <Box sx={{ display: 'flex', gap: 3 }}>
+                                <Box sx={{ mb: 4 }}>
+                                    <Typography
+                                        variant="subtitle1"
+                                        sx={{
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            color: THEME.purple,
+                                            mb: 1,
+                                            ml: 1
+                                        }}
+                                    >
+                                        🎭 Article Category
+                                    </Typography>
+                                    <Select
+                                        fullWidth
+                                        value={form.category_id}
+                                        onChange={(e) => setForm({ ...form, category_id: e.target.value ? Number(e.target.value) : '' })}
+                                        displayEmpty
+                                        renderValue={(selected) => {
+                                            if (!selected) {
+                                                return <Typography sx={{ color: '#9ca3af', fontFamily: '"Comic Sans MS", cursive' }}>Pick a category for your article</Typography>;
+                                            }
+                                            const category = categories.find(cat => cat.id === selected);
+                                            return category ? `${CATEGORY_ICONS[category.name.toLowerCase()] || '📚'} ${category.name}` : '';
+                                        }}
+                                        sx={{
+                                            bgcolor: 'white',
+                                            borderRadius: 40,
+                                            '& .MuiOutlinedInput-root': {
+                                                '& fieldset': { borderColor: THEME.secondary, borderWidth: 3 },
+                                                '&:hover fieldset': { borderColor: THEME.primary },
+                                                '&.Mui-focused fieldset': { borderColor: THEME.accent },
+                                            },
+                                        }}
+                                    >
+                                        <MenuItem value="">
+                                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive' }}>Select a category</Typography>
+                                        </MenuItem>
+                                        {categories.map((cat) => (
+                                            <MenuItem key={cat.id} value={cat.id} sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                                {CATEGORY_ICONS[cat.name.toLowerCase()] || '📚'} {cat.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </Box>
+
+                                <Box sx={{ mb: 4 }}>
+                                    <Typography
+                                        variant="subtitle1"
+                                        sx={{
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            color: THEME.purple,
+                                            mb: 2,
+                                            ml: 1
+                                        }}
+                                    >
+                                        ✍️ Write Your Article
+                                    </Typography>
+                                    <Paper
+                                        sx={{
+                                            border: `3px solid ${THEME.secondary}`,
+                                            borderRadius: 8,
+                                            overflow: 'hidden',
+                                            bgcolor: 'white',
+                                        }}
+                                    >
+                                        <textarea
+                                            placeholder="Once upon a time..."
+                                            value={form.content}
+                                            onChange={(e) => setForm({ ...form, content: e.target.value })}
+                                            style={{
+                                                width: '100%',
+                                                minHeight: 300,
+                                                padding: '20px',
+                                                border: 'none',
+                                                fontFamily: '"Comic Sans MS", cursive',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                    </Paper>
+                                </Box>
+
+                                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                                     <Button
                                         type="submit"
                                         variant="contained"
                                         size="large"
+                                        startIcon={<SaveIcon />}
                                         sx={{
-                                            background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.secondary} 100%)`,
-                                            fontWeight: 700,
-                                            textTransform: 'none',
-                                            borderRadius: '10px',
+                                            bgcolor: THEME.secondary,
+                                            color: 'white',
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            fontSize: '1.1rem',
                                             py: 1.5,
-                                            fontSize: '1rem',
-                                            boxShadow: `0 4px 15px rgba(0, 180, 216, 0.3)`,
+                                            px: 4,
+                                            borderRadius: 40,
+                                            border: `3px solid ${THEME.accent}`,
                                             '&:hover': {
-                                                boxShadow: `0 6px 25px rgba(0, 180, 216, 0.4)`,
-                                            },
+                                                bgcolor: THEME.blue,
+                                                transform: 'scale(1.05)'
+                                            }
                                         }}
                                     >
-                                        Save as Draft
+                                        Save to Drafts 📝
                                     </Button>
                                     <Button
                                         type="button"
                                         variant="contained"
                                         size="large"
+                                        startIcon={<RocketIcon />}
                                         onClick={(e) => {
                                             Inertia.post(route('writer.articles.store'), { ...form, submit: true });
                                         }}
                                         sx={{
-                                            background: THEME.success,
-                                            fontWeight: 700,
-                                            textTransform: 'none',
-                                            borderRadius: '10px',
+                                            bgcolor: THEME.green,
+                                            color: 'white',
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            fontSize: '1.1rem',
                                             py: 1.5,
-                                            fontSize: '1rem',
-                                            boxShadow: `0 4px 15px rgba(22, 163, 74, 0.3)`,
+                                            px: 4,
+                                            borderRadius: 40,
+                                            border: `3px solid ${THEME.accent}`,
                                             '&:hover': {
-                                                boxShadow: `0 6px 25px rgba(22, 163, 74, 0.4)`,
+                                                bgcolor: '#4CAF50',
+                                                transform: 'scale(1.05)'
                                             },
                                         }}
                                     >
-                                        Save & Submit for Review
+                                        Submit for Review 🚀
                                     </Button>
                                 </Box>
                             </Box>
@@ -352,198 +618,179 @@ export default function Dashboard({ articles, categories, auth, notifications })
 
             case 'drafts':
                 return (
-                    <Fade in={activeNav === 'drafts'}>
+                    <Fade in={activeNav === 'drafts'} timeout={800}>
                         <Box>
                             <Box sx={{ mb: 4 }}>
-                                <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
-                                    Drafts
+                                <Typography
+                                    variant="h4"
+                                    sx={{
+                                        fontFamily: '"Comic Sans MS", cursive',
+                                        fontWeight: 'bold',
+                                        color: THEME.primary,
+                                        mb: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}
+                                >
+                                    <CreateIcon sx={{ fontSize: 40 }} />
+                                    My Article Drafts
+                                    <CreateIcon sx={{ fontSize: 40 }} />
                                 </Typography>
-                                <Typography variant="body2" sx={{ mb: 3, color: '#6b7280' }}>
-                                    You have {draftArticles.length} draft{draftArticles.length !== 1 ? 's' : ''}
+                                <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text, mb: 3 }}>
+                                    You have {draftArticles.length} magical article{draftArticles.length !== 1 ? 's' : ''} in progress!
                                 </Typography>
+                                
                                 <TextField
                                     fullWidth
-                                    placeholder="Search by title or category..."
+                                    placeholder="🔍 Search your drafts..."
                                     value={categorySearch}
                                     onChange={(e) => setCategorySearch(e.target.value)}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
-                                                <SearchIcon sx={{ color: '#9ca3af' }} />
+                                                <SearchIcon sx={{ color: THEME.secondary }} />
                                             </InputAdornment>
                                         ),
                                     }}
                                     sx={{
-                                        mb: 3,
                                         '& .MuiOutlinedInput-root': {
-                                            borderRadius: '10px',
-                                            backgroundColor: '#f9fafb',
+                                            bgcolor: 'white',
+                                            borderRadius: 40,
+                                            border: `3px solid ${THEME.secondary}`,
+                                            fontFamily: '"Comic Sans MS", cursive',
                                             '&:hover fieldset': { borderColor: THEME.primary },
-                                            '&.Mui-focused fieldset': { borderColor: THEME.primary },
+                                            '&.Mui-focused fieldset': { borderColor: THEME.accent },
                                         },
                                     }}
                                     variant="outlined"
                                 />
                             </Box>
+
                             {filteredDraftArticles.length === 0 ? (
-                                <Card sx={{ 
-                                        borderRadius: '12px',
-                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                    <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                                        <Typography color="textSecondary">
-                                            {categorySearch ? ' No drafts found matching your search.' : ' No drafts yet. Start creating!'}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
+                                <Paper sx={{ 
+                                    p: 6,
+                                    borderRadius: 8,
+                                    background: `linear-gradient(135deg, ${THEME.accent}20 0%, ${THEME.secondary}20 100%)`,
+                                    border: `4px solid ${THEME.accent}`,
+                                    textAlign: 'center'
+                                }}>
+                                    <Typography variant="h3" sx={{ fontSize: '4rem', mb: 2 }}>
+                                        {categorySearch ? '🔍' : '📝'}
+                                    </Typography>
+                                    <Typography variant="h5" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                        {categorySearch ? 'No drafts found matching your search!' : 'No drafts yet. Start your first article!'}
+                                    </Typography>
+                                </Paper>
                             ) : (
-                                <Grid
-                                    container
-                                    spacing={3}
-                                >
-                                    {filteredDraftArticles.map((article) => (
-                                        <Grid
-                                            key={article.id}
-                                            item
-                                            xs={12}
-                                            md={4}   // ALWAYS 3 per row on md+
-                                            sx={{
-                                                display: 'flex',
-                                            }}
-                                        >
-                                            <Card
-                                                sx={{
-                                                    flex: 1,
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    borderRadius: '14px',
-                                                    border: '1px solid #e2e8f0',
-                                                    minHeight: 340, // FORCE equal height
-                                                    transition: 'all 0.25s ease',
-                                                    background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 50%, #f0fdfa 100%)',
-                                                    '&:hover': {
-                                                        transform: 'translateY(-6px)',
-                                                        boxShadow: '0 12px 30px rgba(0, 180, 216, 0.15)',
-                                                        border: '1px solid #00b4d8',
-                                                    },
-                                                }}
-                                            >
-                                                {/* TOP CONTENT */}
-                                                <CardContent
+                                <Grid container spacing={4}>
+                                    {filteredDraftArticles.map((article, index) => (
+                                        <Grid key={article.id} item xs={12} md={4}>
+                                            <Zoom in timeout={500 + index * 100}>
+                                                <Card
                                                     sx={{
-                                                        flexGrow: 1,
+                                                        height: '100%',
                                                         display: 'flex',
                                                         flexDirection: 'column',
-                                                        p: 3,
+                                                        borderRadius: 8,
+                                                        border: `4px solid ${THEME.secondary}`,
+                                                        boxShadow: `6px 6px 0 ${THEME.primary}`,
+                                                        bgcolor: 'white',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            transform: 'translateY(-4px) translateX(-4px)',
+                                                            boxShadow: `10px 10px 0 ${THEME.primary}`
+                                                        }
                                                     }}
                                                 >
-                                                    {/* TITLE (fixed height block) */}
-                                                    <Typography
-                                                        variant="h6"
-                                                        sx={{
-                                                            fontWeight: 700,
-                                                            fontSize: '1.05rem',
-                                                            lineHeight: 1.4,
-                                                            minHeight: 56, // SAME height for all titles
-                                                            display: '-webkit-box',
-                                                            WebkitLineClamp: 2,
-                                                            WebkitBoxOrient: 'vertical',
-                                                            overflow: 'hidden',
-                                                            mb: 2,
-                                                        }}
-                                                    >
-                                                        {article.title}
-                                                    </Typography>
+                                                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+                                                            <Chip
+                                                                icon={<span>{STATUS_COLORS.draft.icon}</span>}
+                                                                label="Draft"
+                                                                sx={{
+                                                                    bgcolor: STATUS_COLORS.draft.bg,
+                                                                    color: STATUS_COLORS.draft.text,
+                                                                    fontWeight: 'bold',
+                                                                    borderRadius: 20,
+                                                                    fontFamily: '"Comic Sans MS", cursive'
+                                                                }}
+                                                            />
+                                                            <Typography variant="caption" sx={{ color: THEME.text }}>
+                                                                {new Date(article.updated_at).toLocaleDateString()}
+                                                            </Typography>
+                                                        </Box>
 
-                                                    {/* CATEGORY */}
-                                                    <Chip
-                                                        label={article.category.name}
-                                                        size="small"
-                                                        sx={{
-                                                            alignSelf: 'flex-start',
-                                                            mb: 2,
-                                                            backgroundColor: '#f0f4ff',
-                                                            color: '#4f46e5',
-                                                            fontWeight: 600,
-                                                            fontSize: '0.75rem',
-                                                        }}
-                                                    />
-
-                                                    {/* DATE */}
-                                                    <Typography
-                                                        variant="caption"
-                                                        sx={{ color: '#6b7280', mb: 2 }}
-                                                    >
-                                                        Last edited:{" "}
-                                                        {new Date(article.updated_at).toLocaleDateString()}
-                                                    </Typography>
-
-                                                    {/* PUSH STATUS TO BOTTOM */}
-                                                    <Box sx={{ mt: 'auto' }}>
-                                                        <Chip
-                                                            label="Draft"
+                                                        <Typography
+                                                            variant="h6"
                                                             sx={{
-                                                                width: '100%',
-                                                                background: STATUS_COLORS.draft.bg,
-                                                                color: STATUS_COLORS.draft.text,
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                fontWeight: 'bold',
+                                                                color: THEME.primary,
+                                                                mb: 2,
+                                                                minHeight: 56
+                                                            }}
+                                                        >
+                                                            {article.title}
+                                                        </Typography>
+
+                                                        <Chip
+                                                            label={`${CATEGORY_ICONS[article.category.name.toLowerCase()] || '📚'} ${article.category.name}`}
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: THEME.secondary,
+                                                                color: 'white',
                                                                 fontWeight: 600,
-                                                                justifyContent: 'center',
+                                                                borderRadius: 20,
+                                                                mb: 2
                                                             }}
                                                         />
-                                                    </Box>
-                                                </CardContent>
 
-                                                {/* ACTION BUTTONS */}
-                                                <CardActions
-                                                    sx={{
-                                                        flexDirection: 'column',
-                                                        gap: 1,
-                                                        px: 2,
-                                                        pb: 2,
-                                                    }}
-                                                >
-                                                    <Button
-                                                        fullWidth
-                                                        size="small"
-                                                        startIcon={<VisibilityIcon />}
-                                                        sx={{ justifyContent: 'flex-start' }}
-                                                        onClick={() =>
-                                                            (window.location.href = route(
-                                                                'writer.articles.show',
-                                                                article.id
-                                                            ))
-                                                        }
-                                                    >
-                                                        View
-                                                    </Button>
+                                                        <Typography variant="body2" sx={{ color: THEME.text, mb: 2 }}>
+                                                            {article.excerpt ? article.excerpt.substring(0, 80) + '...' : 'No preview available...'}
+                                                        </Typography>
+                                                    </CardContent>
 
-                                                    <Button
-                                                        fullWidth
-                                                        size="small"
-                                                        startIcon={<EditIcon />}
-                                                        sx={{ justifyContent: 'flex-start' }}
-                                                        onClick={() =>
-                                                            (window.location.href = route(
-                                                                'writer.articles.show',
-                                                                article.id
-                                                            ))
-                                                        }
-                                                    >
-                                                        Edit
-                                                    </Button>
-
-                                                    <Button
-                                                        fullWidth
-                                                        size="small"
-                                                        startIcon={<SendIcon />}
-                                                        onClick={() => handleSubmitArticle(article.id)}
-                                                        sx={{ justifyContent: 'flex-start', fontWeight: 600 }}
-                                                    >
-                                                        Submit
-                                                    </Button>
-                                                </CardActions>
-                                            </Card>
+                                                    <CardActions sx={{ p: 3, pt: 0, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                        <Button
+                                                            size="small"
+                                                            startIcon={<VisibilityIcon />}
+                                                            onClick={() => window.location.href = route('writer.articles.show', article.id)}
+                                                            sx={{
+                                                                color: THEME.blue,
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                '&:hover': { bgcolor: alpha(THEME.blue, 0.1) }
+                                                            }}
+                                                        >
+                                                            Read
+                                                        </Button>
+                                                        <Button
+                                                            size="small"
+                                                            startIcon={<EditIcon />}
+                                                            onClick={() => window.location.href = route('writer.articles.show', article.id)}
+                                                            sx={{
+                                                                color: THEME.orange,
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                '&:hover': { bgcolor: alpha(THEME.orange, 0.1) }
+                                                            }}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            size="small"
+                                                            startIcon={<RocketIcon />}
+                                                            onClick={() => handleSubmitArticle(article.id)}
+                                                            sx={{
+                                                                color: THEME.green,
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                '&:hover': { bgcolor: alpha(THEME.green, 0.1) }
+                                                            }}
+                                                        >
+                                                            Submit
+                                                        </Button>
+                                                    </CardActions>
+                                                </Card>
+                                            </Zoom>
                                         </Grid>
                                     ))}
                                 </Grid>
@@ -554,85 +801,122 @@ export default function Dashboard({ articles, categories, auth, notifications })
 
             case 'submitted':
                 return (
-                    <Fade in={activeNav === 'submitted'}>
+                    <Fade in={activeNav === 'submitted'} timeout={800}>
                         <Box>
                             <Box sx={{ mb: 4 }}>
-                                <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
-                                    Submitted Articles
+                                <Typography
+                                    variant="h4"
+                                    sx={{
+                                        fontFamily: '"Comic Sans MS", cursive',
+                                        fontWeight: 'bold',
+                                        color: THEME.primary,
+                                        mb: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}
+                                >
+                                    <RocketIcon sx={{ fontSize: 40 }} />
+                                    Stories Under Review
+                                    <RocketIcon sx={{ fontSize: 40 }} />
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                                    {submittedArticles.length} under review, {revisedArticles.length} awaiting revision
+                                <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                    {submittedArticles.length} waiting for review, {revisedArticles.length} need your attention
                                 </Typography>
                             </Box>
+
                             {submittedArticles.length === 0 && revisedArticles.length === 0 ? (
-                                <Card sx={{ 
-                                        borderRadius: '12px',
-                                        background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 100%)',
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                    <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                                        <Typography color="textSecondary">
-                                            📤 No submitted articles yet.
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
+                                <Paper sx={{ 
+                                    p: 6,
+                                    borderRadius: 8,
+                                    background: `linear-gradient(135deg, ${THEME.accent}20 0%, ${THEME.secondary}20 100%)`,
+                                    border: `4px solid ${THEME.accent}`,
+                                    textAlign: 'center'
+                                }}>
+                                    <Typography variant="h3" sx={{ fontSize: '4rem', mb: 2 }}>
+                                        🚀
+                                    </Typography>
+                                    <Typography variant="h5" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                        No articles under review yet. Submit your first article!
+                                    </Typography>
+                                </Paper>
                             ) : (
                                 <Grid container spacing={3}>
-                                    {[...submittedArticles, ...revisedArticles].map((article) => (
+                                    {[...submittedArticles, ...revisedArticles].map((article, index) => (
                                         <Grid key={article.id} item xs={12}>
-                                            <Card
-                                                sx={{
-                                                    borderRadius: '12px',
-                                                    border: '1px solid #e2e8f0',
-                                                    transition: 'all 0.3s ease',
-                                                    background: 'linear-gradient(135deg, #f0fdff 0%, #e6fffa 50%, #f0fdfa 100%)',
-                                                    '&:hover': {
-                                                        transform: 'translateX(4px)',
-                                                        boxShadow: '0 8px 20px rgba(0, 180, 216, 0.15)',
-                                                        border: '1px solid #00b4d8',
-                                                    },
-                                                }}
-                                            >
-                                                <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                                                    <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                                            {article.title}
-                                                        </Typography>
-                                                        <Chip label={article.category.name} size="small" sx={{ mb: 2 }} />
-                                                        <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
-                                                            Status: {article.status.label}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Chip
-                                                        label={article.status.label}
-                                                        sx={{
-                                                            background: STATUS_COLORS[article.status.name]?.bg || '#f0f0f0',
-                                                            color: STATUS_COLORS[article.status.name]?.text || '#666',
-                                                            fontWeight: 600,
-                                                        }}
-                                                    />
-                                                </CardContent>
-                                                <CardActions>
-                                                    <Button 
-                                                        size="small" 
-                                                        startIcon={<VisibilityIcon />} 
-                                                        sx={{ color: '#667eea' }}
-                                                        onClick={() => window.location.href = route('writer.articles.show', article.id)}
-                                                    >
-                                                        View
-                                                    </Button>
-                                                    {article.status.name === 'needs_revision' && (
-                                                        <Button 
-                                                            size="small" 
-                                                            startIcon={<EditIcon />} 
-                                                            sx={{ color: '#e65100', fontWeight: 600 }}
-                                                            onClick={() => window.location.href = route('writer.articles.revise.page', article.id)}
-                                                        >
-                                                            Revise
-                                                        </Button>
-                                                    )}
-                                                </CardActions>
-                                            </Card>
+                                            <Grow in timeout={500 + index * 100}>
+                                                <Card
+                                                    sx={{
+                                                        borderRadius: 8,
+                                                        border: `4px solid ${article.status.name === 'needs_revision' ? THEME.primary : THEME.green}`,
+                                                        boxShadow: `4px 4px 0 ${article.status.name === 'needs_revision' ? THEME.primary : THEME.green}`,
+                                                        bgcolor: 'white'
+                                                    }}
+                                                >
+                                                    <CardContent>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                                <Typography variant="h6" sx={{ fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold', color: THEME.text }}>
+                                                                    {article.title}
+                                                                </Typography>
+                                                                <Chip
+                                                                    icon={<span>{STATUS_COLORS[article.status.name]?.icon}</span>}
+                                                                    label={article.status.label}
+                                                                    sx={{
+                                                                        bgcolor: STATUS_COLORS[article.status.name]?.bg,
+                                                                        color: STATUS_COLORS[article.status.name]?.text,
+                                                                        fontWeight: 'bold',
+                                                                        borderRadius: 20,
+                                                                        fontFamily: '"Comic Sans MS", cursive'
+                                                                    }}
+                                                                />
+                                                            </Box>
+                                                            <Typography variant="caption" sx={{ color: THEME.text }}>
+                                                                {new Date(article.updated_at).toLocaleDateString()}
+                                                            </Typography>
+                                                        </Box>
+
+                                                        <Chip
+                                                            label={`${CATEGORY_ICONS[article.category.name.toLowerCase()] || '📚'} ${article.category.name}`}
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: THEME.secondary,
+                                                                color: 'white',
+                                                                borderRadius: 20,
+                                                                mb: 2
+                                                            }}
+                                                        />
+
+                                                        <Box sx={{ display: 'flex', gap: 2 }}>
+                                                            <Button
+                                                                size="small"
+                                                                startIcon={<VisibilityIcon />}
+                                                                onClick={() => window.location.href = route('writer.articles.show', article.id)}
+                                                                sx={{
+                                                                    color: THEME.blue,
+                                                                    fontFamily: '"Comic Sans MS", cursive'
+                                                                }}
+                                                            >
+                                                                Read Article
+                                                            </Button>
+                                                            {article.status.name === 'needs_revision' && (
+                                                                <Button
+                                                                    size="small"
+                                                                    startIcon={<EditIcon />}
+                                                                    onClick={() => window.location.href = route('writer.articles.revise.page', article.id)}
+                                                                    sx={{
+                                                                        color: THEME.orange,
+                                                                        fontFamily: '"Comic Sans MS", cursive',
+                                                                        fontWeight: 'bold'
+                                                                    }}
+                                                                >
+                                                                    Revise Article
+                                                                </Button>
+                                                            )}
+                                                        </Box>
+                                                    </CardContent>
+                                                </Card>
+                                            </Grow>
                                         </Grid>
                                     ))}
                                 </Grid>
@@ -647,54 +931,126 @@ export default function Dashboard({ articles, categories, auth, notifications })
     };
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
+        <Box sx={{ 
+            display: 'flex', 
+            minHeight: '100vh', 
+            background: `linear-gradient(135deg, ${THEME.background} 0%, ${alpha(THEME.accent, 0.1)} 100%)`,
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            {/* Floating Background Icons */}
+            <Box sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                pointerEvents: 'none',
+                zIndex: 0,
+                opacity: 0.1
+            }}>
+                {floatingIcons.map((item, index) => (
+                    <Box
+                        key={index}
+                        sx={{
+                            position: 'absolute',
+                            left: `${item.left}%`,
+                            top: `${item.top}%`,
+                            color: [THEME.primary, THEME.secondary, THEME.accent, THEME.purple][Math.floor(Math.random() * 4)],
+                            fontSize: item.size,
+                            animation: `float ${item.duration}s infinite ease-in-out`,
+                            animationDelay: `${item.delay}s`,
+                            '@keyframes float': {
+                                '0%': { transform: 'translateY(0px) rotate(0deg)' },
+                                '50%': { transform: 'translateY(-20px) rotate(10deg)' },
+                                '100%': { transform: 'translateY(0px) rotate(0deg)' }
+                            }
+                        }}
+                    >
+                        {item.icon}
+                    </Box>
+                ))}
+            </Box>
+
             {/* Header */}
             <AppBar
                 position="fixed"
                 sx={{
-                    background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.secondary} 100%)`,
-                    boxShadow: '0 8px 32px rgba(0, 180, 216, 0.15)',
+                    background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.purple} 100%)`,
+                    borderBottom: `4px solid ${THEME.accent}`,
+                    boxShadow: `0 8px 0 ${alpha(THEME.primary, 0.5)}`,
                     zIndex: 1201,
-                    backdropFilter: 'blur(10px)',
                     height: 80
                 }}
             >
-                <Toolbar sx={{ minHeight: 80 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 800, flexGrow: 1, fontSize: '1.8rem', letterSpacing: '-0.3px' }}>
-                         Writer Dashboard
-                    </Typography>
-                    
+                <Toolbar sx={{ minHeight: 80, position: 'relative' }}>
+                    <IconButton
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        sx={{
+                            color: 'white',
+                            mr: 2,
+                            bgcolor: alpha(THEME.accent, 0.3),
+                            '&:hover': { bgcolor: alpha(THEME.accent, 0.5) }
+                        }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+                        <Box
+                            sx={{
+                                bgcolor: THEME.accent,
+                                borderRadius: '50%',
+                                width: 50,
+                                height: 50,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                animation: 'bounce 2s infinite',
+                                '@keyframes bounce': {
+                                    '0%, 100%': { transform: 'translateY(0)' },
+                                    '50%': { transform: 'translateY(-5px)' }
+                                }
+                            }}
+                        >
+                            <AutoStoriesIcon sx={{ fontSize: 30, color: THEME.primary }} />
+                        </Box>
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontFamily: '"Comic Sans MS", cursive',
+                                fontWeight: 'bold',
+                                color: 'white',
+                                textShadow: '3px 3px 0 rgba(0,0,0,0.2)'
+                            }}
+                        >
+                            Writer's Studio
+                        </Typography>
+                    </Box>
+
                     {/* Notification Bell */}
                     <IconButton
                         onClick={(e) => setNotificationAnchor(e.currentTarget)}
-                        sx={{ 
-                            color: 'white', 
+                        sx={{
+                            color: 'white',
                             mr: 2,
                             width: 48,
                             height: 48,
-                            background: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            border: '2px solid rgba(255,255,255,0.2)',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                            transition: 'all 0.3s ease',
+                            bgcolor: alpha(THEME.accent, 0.3),
+                            border: `2px solid ${THEME.accent}`,
                             '&:hover': {
-                                background: 'rgba(255,255,255,0.25)',
-                                transform: 'scale(1.05)',
-                                boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
-                            },
-                            '&:active': {
-                                transform: 'scale(0.95)',
+                                bgcolor: alpha(THEME.accent, 0.5),
+                                transform: 'scale(1.1)'
                             }
                         }}
                     >
-                        <Badge 
-                            badgeContent={unreadCount} 
-                            color="error"
+                        <Badge
+                            badgeContent={unreadCount}
                             sx={{
                                 '& .MuiBadge-badge': {
-                                    fontSize: '0.6rem',
-                                    height: 16,
-                                    minWidth: 16,
+                                    bgcolor: THEME.primary,
+                                    color: 'white',
+                                    fontSize: '0.6rem'
                                 }
                             }}
                         >
@@ -705,64 +1061,51 @@ export default function Dashboard({ articles, categories, auth, notifications })
                             )}
                         </Badge>
                     </IconButton>
-                    
+
                     {/* Home Button */}
                     <IconButton
                         onClick={() => Inertia.visit('/')}
-                        sx={{ 
-                            color: 'white', 
+                        sx={{
+                            color: 'white',
                             mr: 2,
                             width: 48,
                             height: 48,
-                            background: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            border: '2px solid rgba(255,255,255,0.2)',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                            transition: 'all 0.3s ease',
+                            bgcolor: alpha(THEME.accent, 0.3),
+                            border: `2px solid ${THEME.accent}`,
                             '&:hover': {
-                                background: 'rgba(255,255,255,0.25)',
-                                transform: 'scale(1.05)',
-                                boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                                bgcolor: alpha(THEME.accent, 0.5),
+                                transform: 'scale(1.1)'
                             }
                         }}
-                        title="Home"
                     >
                         <HomeIcon sx={{ fontSize: 24 }} />
                     </IconButton>
-                    
+
+                    {/* Profile Menu */}
                     <IconButton
                         onClick={(e) => setProfileAnchor(e.currentTarget)}
-                        sx={{ 
-                            color: 'white', 
-                            ml: 2,
+                        sx={{
+                            color: 'white',
                             width: 48,
                             height: 48,
-                            background: 'rgba(255,255,255,0.25)',
-                            backdropFilter: 'blur(10px)',
-                            border: '2px solid rgba(255,255,255,0.3)',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                            transition: 'all 0.3s ease',
+                            bgcolor: alpha(THEME.accent, 0.3),
+                            border: `2px solid ${THEME.accent}`,
                             '&:hover': {
-                                background: 'rgba(255,255,255,0.35)',
-                                transform: 'scale(1.05)',
-                                boxShadow: '0 6px 25px rgba(0,0,0,0.25)',
-                            },
-                            '&:active': {
-                                transform: 'scale(0.95)',
+                                bgcolor: alpha(THEME.accent, 0.5),
+                                transform: 'scale(1.1)'
                             }
                         }}
                     >
-                        <Avatar sx={{ 
-                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)', 
-                            width: 36, 
-                            height: 36,
+                        <Avatar sx={{
+                            bgcolor: THEME.accent,
+                            color: THEME.primary,
                             fontWeight: 'bold',
-                            fontSize: '1rem',
-                            border: '2px solid rgba(255,255,255,0.5)'
+                            border: '2px solid white'
                         }}>
                             {auth?.user?.name?.charAt(0) || 'U'}
                         </Avatar>
                     </IconButton>
+
                     <Menu
                         anchorEl={profileAnchor}
                         open={Boolean(profileAnchor)}
@@ -770,13 +1113,14 @@ export default function Dashboard({ articles, categories, auth, notifications })
                         PaperProps={{
                             sx: {
                                 minWidth: 250,
-                                borderRadius: '12px',
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                                border: '1px solid rgba(0, 0, 0, 0.08)',
+                                borderRadius: 8,
+                                border: `3px solid ${THEME.secondary}`,
+                                boxShadow: `4px 4px 0 ${THEME.primary}`,
+                                bgcolor: 'white'
                             }
                         }}
                     >
-                        <MenuItem disabled>
+                        <MenuItem disabled sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
                             <Typography variant="caption" sx={{ fontWeight: 600 }}>{auth?.user?.name}</Typography>
                         </MenuItem>
                         <Divider />
@@ -784,39 +1128,41 @@ export default function Dashboard({ articles, categories, auth, notifications })
                             setProfileAnchor(null);
                             window.location.href = route('profile.edit');
                         }}>
-                            <AccountCircleIcon sx={{ mr: 1, fontSize: 18 }} />
-                            Profile
+                            <AccountCircleIcon sx={{ mr: 1, fontSize: 18, color: THEME.blue }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive' }}>My Profile</Typography>
                         </MenuItem>
                         <MenuItem onClick={() => {
                             setProfileAnchor(null);
-                            window.location.href = '/sample/logout';
+                            window.location.href = '/logout';
                         }}>
-                            <LogoutIcon sx={{ mr: 1, fontSize: 18, color: '#e65100' }} />
-                            Log Out
+                            <LogoutIcon sx={{ mr: 1, fontSize: 18, color: THEME.primary }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive' }}>Log Out</Typography>
                         </MenuItem>
                         <Divider />
                         <MenuItem
                             onClick={() => {
                                 setProfileAnchor(null);
-                                window.location.href = '/sample/switch/editor';
+                                window.location.href = '/switch/editor';
                             }}
-                            sx={{ fontSize: '0.85rem', color: '#667eea' }}
                         >
-                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16 }} />
-                            Editor
+                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16, color: THEME.green }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '0.9rem' }}>
+                                Switch to Editor Mode
+                            </Typography>
                         </MenuItem>
                         <MenuItem
                             onClick={() => {
                                 setProfileAnchor(null);
-                                window.location.href = '/sample/switch/student';
+                                window.location.href = '/switch/student';
                             }}
-                            sx={{ fontSize: '0.85rem', color: '#667eea' }}
                         >
-                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16 }} />
-                            Student
+                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16, color: THEME.purple }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '0.9rem' }}>
+                                Switch to Reader Mode
+                            </Typography>
                         </MenuItem>
                     </Menu>
-                    
+
                     {/* Notification Dropdown */}
                     <Menu
                         anchorEl={notificationAnchor}
@@ -827,97 +1173,95 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                 maxHeight: 400,
                                 width: 350,
                                 mt: 1,
+                                borderRadius: 8,
+                                border: `3px solid ${THEME.secondary}`,
+                                boxShadow: `4px 4px 0 ${THEME.primary}`,
+                                bgcolor: 'white'
                             }
                         }}
                     >
                         <MenuItem disabled>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                Notifications from Editors
+                            <Typography variant="subtitle2" sx={{ fontFamily: '"Comic Sans MS", cursive', fontWeight: 600, color: THEME.purple }}>
+                                📬 Messages from Editors
                             </Typography>
                         </MenuItem>
                         <Divider />
-                        
+
                         {notifications?.length > 0 && (
                             <MenuItem
                                 onClick={() => {
-                                    // Mark all notifications as read
                                     const allNotificationIds = notifications.map(n => n.id);
                                     setReadNotifications(new Set(allNotificationIds));
                                     setNotificationAnchor(null);
                                 }}
-                                sx={{ 
+                                sx={{
                                     py: 1,
-                                    backgroundColor: '#f8fafc',
-                                    borderBottom: '1px solid #e2e8f0',
-                                    '&:hover': { backgroundColor: '#f1f5f9' }
+                                    bgcolor: alpha(THEME.accent, 0.2),
+                                    '&:hover': { bgcolor: alpha(THEME.accent, 0.3) }
                                 }}
                             >
-                                <Typography variant="body2" sx={{ color: '#4f46e5', fontWeight: 600, textAlign: 'center', width: '100%' }}>
-                                    Mark All as Read
+                                <Typography variant="body2" sx={{ color: THEME.primary, fontWeight: 600, textAlign: 'center', width: '100%', fontFamily: '"Comic Sans MS", cursive' }}>
+                                    ✨ Mark All as Read ✨
                                 </Typography>
                             </MenuItem>
                         )}
-                        
+
                         {notifications?.length > 0 ? (
                             notifications.map((notification) => (
                                 <MenuItem
                                     key={notification.id}
                                     onClick={() => {
-                                        // Mark this notification as read
                                         setReadNotifications(prev => new Set([...prev, notification.id]));
                                     }}
-                                    sx={{ 
+                                    sx={{
                                         py: 2,
                                         flexDirection: 'column',
                                         alignItems: 'flex-start',
                                         whiteSpace: 'normal',
-                                        '&:hover': {
-                                            backgroundColor: '#f8fafc',
-                                        },
-                                        opacity: readNotifications.has(notification.id) ? 0.6 : 1,
-                                        borderLeft: readNotifications.has(notification.id) ? '3px solid #e5e7eb' : '3px solid #4f46e5'
+                                        borderLeft: readNotifications.has(notification.id) ? `3px solid ${THEME.secondary}` : `3px solid ${THEME.primary}`,
+                                        bgcolor: readNotifications.has(notification.id) ? 'white' : alpha(THEME.accent, 0.1)
                                     }}
                                 >
                                     <Box sx={{ width: '100%' }}>
-                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#111827' }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: THEME.text, fontFamily: '"Comic Sans MS", cursive' }}>
                                             {notification.data.message}
                                         </Typography>
-                                        
+
                                         {notification.data.type === 'revision_requested' && (
-                                            <Box sx={{ mt: 1, p: 1.5, backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fcd34d' }}>
-                                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#92400e', display: 'block', mb: 0.5 }}>
-                                                    Editor Comments:
+                                            <Box sx={{ mt: 1, p: 1.5, bgcolor: alpha(THEME.primary, 0.1), borderRadius: 4, border: `2px solid ${THEME.primary}` }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 600, color: THEME.primary, display: 'block', mb: 0.5, fontFamily: '"Comic Sans MS", cursive' }}>
+                                                    Editor says:
                                                 </Typography>
-                                                <Typography variant="body2" sx={{ color: '#78350f', fontStyle: 'italic' }}>
+                                                <Typography variant="body2" sx={{ color: THEME.text, fontStyle: 'italic', fontFamily: '"Comic Sans MS", cursive' }}>
                                                     "{notification.data.comments}"
                                                 </Typography>
-                                                <Typography variant="caption" sx={{ color: '#92400e', display: 'block', mt: 0.5 }}>
+                                                <Typography variant="caption" sx={{ color: THEME.text, display: 'block', mt: 0.5, fontFamily: '"Comic Sans MS", cursive' }}>
                                                     — {notification.data.editor_name}
                                                 </Typography>
                                             </Box>
                                         )}
-                                        
+
                                         {notification.data.type === 'article_published' && (
-                                            <Box sx={{ mt: 1, p: 1.5, backgroundColor: '#f0fdf4', borderRadius: '8px', border: '1px solid #86efac' }}>
-                                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#166534', display: 'block' }}>
-                                                    Published by: {notification.data.editor_name}
+                                            <Box sx={{ mt: 1, p: 1.5, bgcolor: alpha(THEME.green, 0.1), borderRadius: 4, border: `2px solid ${THEME.green}` }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 600, color: THEME.green, display: 'block', mb: 0.5, fontFamily: '"Comic Sans MS", cursive' }}>
+                                                    ✨ Published by: {notification.data.editor_name}
                                                 </Typography>
-                                                <Typography variant="body2" sx={{ color: '#166534' }}>
-                                                    Your article is now live and available for students to read!
+                                                <Typography variant="body2" sx={{ color: THEME.text, fontFamily: '"Comic Sans MS", cursive' }}>
+                                                    Your article is now live for everyone to read!
                                                 </Typography>
                                             </Box>
                                         )}
-                                        
-                                        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-                                            {new Date(notification.created_at).toLocaleDateString()} • {new Date(notification.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+
+                                        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1, fontFamily: '"Comic Sans MS", cursive' }}>
+                                            {new Date(notification.created_at).toLocaleDateString()} at {new Date(notification.created_at).toLocaleTimeString()}
                                         </Typography>
                                     </Box>
                                 </MenuItem>
                             ))
                         ) : (
                             <MenuItem disabled>
-                                <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', py: 2 }}>
-                                    No notifications from editors
+                                <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', py: 2, fontFamily: '"Comic Sans MS", cursive' }}>
+                                    📭 No messages from editors yet
                                 </Typography>
                             </MenuItem>
                         )}
@@ -927,69 +1271,96 @@ export default function Dashboard({ articles, categories, auth, notifications })
 
             {/* Sidebar */}
             <Drawer
-                variant="permanent"
+                variant="persistent"
+                anchor="left"
+                open={sidebarOpen}
                 sx={{
-                    width: DRAWER_WIDTH,
+                    width: sidebarOpen ? DRAWER_WIDTH : 0,
                     flexShrink: 0,
                     '& .MuiDrawer-paper': {
                         width: DRAWER_WIDTH,
                         boxSizing: 'border-box',
-                        background: 'white',
-                        borderRight: '1px solid #e2e8f0',
+                        background: `linear-gradient(135deg, ${alpha(THEME.background, 0.9)} 0%, white 100%)`,
+                        borderRight: `4px solid ${THEME.accent}`,
                         mt: '80px',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'width 0.3s ease'
                     },
                 }}
             >
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 3 }}>
                     <List>
                         <ListItem
                             button
                             onClick={() => setActiveNav('dashboard')}
                             sx={{
-                                borderRadius: '8px',
+                                borderRadius: 8,
                                 mb: 1,
-                                background: activeNav === 'dashboard' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
+                                bgcolor: activeNav === 'dashboard' ? alpha(THEME.accent, 0.3) : 'transparent',
+                                border: activeNav === 'dashboard' ? `2px solid ${THEME.primary}` : 'none',
+                                '&:hover': { bgcolor: alpha(THEME.accent, 0.2) }
                             }}
                         >
-                            <ListItemIcon sx={{ color: activeNav === 'dashboard' ? '#667eea' : '#64748b' }}>
-                                <DashboardIcon />
+                            <ListItemIcon>
+                                <DashboardIcon sx={{ color: activeNav === 'dashboard' ? THEME.primary : THEME.text }} />
                             </ListItemIcon>
-                            <ListItemText primary="Dashboard" />
+                            <ListItemText
+                                primary={
+                                    <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', color: activeNav === 'dashboard' ? THEME.primary : THEME.text }}>
+                                        Article Dashboard
+                                    </Typography>
+                                }
+                            />
                         </ListItem>
 
                         <ListItem
                             button
                             onClick={() => setActiveNav('create')}
                             sx={{
-                                borderRadius: '8px',
+                                borderRadius: 8,
                                 mb: 1,
-                                background: activeNav === 'create' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
+                                bgcolor: activeNav === 'create' ? alpha(THEME.accent, 0.3) : 'transparent',
+                                border: activeNav === 'create' ? `2px solid ${THEME.primary}` : 'none',
+                                '&:hover': { bgcolor: alpha(THEME.accent, 0.2) }
                             }}
                         >
-                            <ListItemIcon sx={{ color: activeNav === 'create' ? '#667eea' : '#64748b' }}>
-                                <AddIcon />
+                            <ListItemIcon>
+                                <AddIcon sx={{ color: activeNav === 'create' ? THEME.primary : THEME.text }} />
                             </ListItemIcon>
-                            <ListItemText primary="Create Article" />
+                            <ListItemText
+                                primary={
+                                    <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', color: activeNav === 'create' ? THEME.primary : THEME.text }}>
+                                        Write New Aticle
+                                    </Typography>
+                                }
+                            />
                         </ListItem>
 
                         <ListItem
                             button
                             onClick={() => setActiveNav('drafts')}
                             sx={{
-                                borderRadius: '8px',
+                                borderRadius: 8,
                                 mb: 1,
-                                background: activeNav === 'drafts' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
+                                bgcolor: activeNav === 'drafts' ? alpha(THEME.accent, 0.3) : 'transparent',
+                                border: activeNav === 'drafts' ? `2px solid ${THEME.primary}` : 'none',
+                                '&:hover': { bgcolor: alpha(THEME.accent, 0.2) }
                             }}
                         >
-                            <ListItemIcon sx={{ color: activeNav === 'drafts' ? '#667eea' : '#64748b' }}>
-                                <CreateIcon />
+                            <ListItemIcon>
+                                <CreateIcon sx={{ color: activeNav === 'drafts' ? THEME.primary : THEME.text }} />
                             </ListItemIcon>
                             <ListItemText
-                                primary="My Drafts"
-                                secondary={draftArticles.length}
+                                primary={
+                                    <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', color: activeNav === 'drafts' ? THEME.primary : THEME.text }}>
+                                        My Drafts
+                                    </Typography>
+                                }
+                                secondary={
+                                    <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                        {draftArticles.length} stories
+                                    </Typography>
+                                }
                             />
                         </ListItem>
 
@@ -997,20 +1368,37 @@ export default function Dashboard({ articles, categories, auth, notifications })
                             button
                             onClick={() => setActiveNav('submitted')}
                             sx={{
-                                borderRadius: '8px',
-                                background: activeNav === 'submitted' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
+                                borderRadius: 8,
+                                bgcolor: activeNav === 'submitted' ? alpha(THEME.accent, 0.3) : 'transparent',
+                                border: activeNav === 'submitted' ? `2px solid ${THEME.primary}` : 'none',
+                                '&:hover': { bgcolor: alpha(THEME.accent, 0.2) }
                             }}
                         >
-                            <ListItemIcon sx={{ color: activeNav === 'submitted' ? '#667eea' : '#64748b' }}>
-                                <DoneIcon />
+                            <ListItemIcon>
+                                <DoneIcon sx={{ color: activeNav === 'submitted' ? THEME.primary : THEME.text }} />
                             </ListItemIcon>
                             <ListItemText
-                                primary="Submitted Articles"
-                                secondary={submittedArticles.length + revisedArticles.length}
+                                primary={
+                                    <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', color: activeNav === 'submitted' ? THEME.primary : THEME.text }}>
+                                        Under Review
+                                    </Typography>
+                                }
+                                secondary={
+                                    <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                        {submittedArticles.length + revisedArticles.length} stories
+                                    </Typography>
+                                }
                             />
                         </ListItem>
                     </List>
+
+                    <Divider sx={{ my: 3, borderColor: THEME.accent }} />
+
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                            ✨ Keep writing! Your stories inspire others ✨
+                        </Typography>
+                    </Box>
                 </Box>
             </Drawer>
 
@@ -1020,16 +1408,41 @@ export default function Dashboard({ articles, categories, auth, notifications })
                 sx={{
                     flexGrow: 1,
                     mt: '80px',
-                    p: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
+                    p: 4,
+                    transition: 'margin-left 0.3s ease',
+                    ml: sidebarOpen ? `${DRAWER_WIDTH}px` : 0,
+                    position: 'relative',
+                    zIndex: 1
                 }}
             >
                 <Container maxWidth="lg" sx={{ flexGrow: 1 }}>
                     {renderMainContent()}
                 </Container>
             </Box>
+
+            {/* Back to Top Button */}
+            <IconButton
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                sx={{
+                    position: 'fixed',
+                    bottom: 20,
+                    right: 20,
+                    bgcolor: THEME.accent,
+                    color: THEME.primary,
+                    width: 56,
+                    height: 56,
+                    border: `3px solid ${THEME.secondary}`,
+                    '&:hover': {
+                        bgcolor: THEME.primary,
+                        color: 'white',
+                        transform: 'scale(1.1) rotate(360deg)'
+                    },
+                    transition: 'all 0.5s ease',
+                    zIndex: 1200
+                }}
+            >
+                <RocketIcon />
+            </IconButton>
         </Box>
     );
 }
-

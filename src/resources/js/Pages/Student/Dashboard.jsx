@@ -29,29 +29,68 @@ import {
     MenuItem,
     Menu,
     IconButton,
+    Badge,
+    Zoom,
+    Grow,
+    alpha
 } from '@mui/material';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import HomeIcon from '@mui/icons-material/Home';
+import {
+    AccountCircle as AccountCircleIcon,
+    Logout as LogoutIcon,
+    SwapHoriz as SwapHorizIcon,
+    Home as HomeIcon,
+    Send as SendIcon,
+    Comment as CommentIcon,
+    Person as PersonIcon,
+    MenuBook as MenuBookIcon,
+    Chat as ChatIcon,
+    AutoStories as AutoStoriesIcon,
+    EmojiEmotions as EmojiIcon,
+    Rocket as RocketIcon,
+    Celebration as CelebrationIcon,
+    Star as StarIcon,
+    ThumbUp as ThumbUpIcon,
+    Menu as MenuIcon,
+    Brush as BrushIcon,
+    Pets as PetsIcon,
+    MusicNote as MusicIcon,
+    Forest as ForestIcon,
+    WbSunny as SunIcon,
+    Bookmark as BookmarkIcon,
+    Favorite as FavoriteIcon,
+    Share as ShareIcon
+} from '@mui/icons-material';
 import { Inertia } from '@inertiajs/inertia';
-import SendIcon from '@mui/icons-material/Send';
-import CommentIcon from '@mui/icons-material/Comment';
-import PersonIcon from '@mui/icons-material/Person';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import ChatIcon from '@mui/icons-material/Chat';
 
 const STATUS_COLORS = {
-    published: { bg: '#f0fdf4', text: '#16a34a', border: '#dcfce7' },
+    published: { bg: '#9B6B9E', text: '#FFFFFF', border: '#6B8CFF', icon: '✨' },
 };
 
 const DRAWER_WIDTH = 280;
 const THEME = {
-    primary: '#00b4d8',
-    success: '#16a34a',
+    primary: '#FF6B6B', // Coral red
+    secondary: '#4ECDC4', // Turquoise
+    accent: '#FFE66D', // Sunny yellow
+    purple: '#9B6B9E',
+    orange: '#FF9F1C',
+    pink: '#FF8A80',
+    green: '#6BAA6B',
+    blue: '#6B8CFF',
+    background: '#FFF9E6',
     surface: 'rgba(255, 255, 255, 0.95)',
-    secondary: '#0077b6',
-    dark: '#03045e',
+    text: '#4A4A4A',
+};
+
+// Fun category icons
+const CATEGORY_ICONS = {
+    adventure: '🗺️',
+    fantasy: '🐉',
+    science: '🔬',
+    history: '🏛️',
+    art: '🎨',
+    music: '🎵',
+    nature: '🌿',
+    space: '🚀'
 };
 
 export default function Dashboard({ articles, comments, categories: serverCategories, auth }) {
@@ -62,6 +101,22 @@ export default function Dashboard({ articles, comments, categories: serverCatego
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [openDialog, setOpenDialog] = useState(false);
     const [profileAnchor, setProfileAnchor] = useState(null);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [floatingIcons] = useState(() => {
+        const icons = [
+            <BrushIcon />, <PetsIcon />, <MusicIcon />, <StarIcon />,
+            <ForestIcon />, <EmojiIcon />, <RocketIcon />, <CelebrationIcon />,
+            <SunIcon />
+        ];
+        return icons.map((icon, i) => ({
+            icon,
+            left: Math.random() * 100,
+            top: Math.random() * 100,
+            delay: Math.random() * 5,
+            duration: 8 + Math.random() * 15,
+            size: 15 + Math.random() * 25
+        }));
+    });
 
     const handleOpenDialog = (article) => {
         setSelectedArticle(article);
@@ -93,106 +148,295 @@ export default function Dashboard({ articles, comments, categories: serverCatego
         switch (activeNav) {
             case 'articles':
                 return (
-                    <Fade in={activeNav === 'articles'}>
+                    <Fade in={activeNav === 'articles'} timeout={800}>
                         <Box>
-                            <Box sx={{ mb: 4 }}>
-                                <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
-                                    Published Articles
+                            {/* Welcome Banner */}
+                            <Paper
+                                sx={{
+                                    p: 4,
+                                    mb: 4,
+                                    borderRadius: 8,
+                                    background: `linear-gradient(135deg, ${THEME.blue} 0%, ${THEME.green} 100%)`,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    border: `4px solid ${THEME.accent}`,
+                                    boxShadow: `8px 8px 0 ${alpha(THEME.blue, 0.3)}`
+                                }}
+                            >
+                                <Box sx={{ position: 'relative', zIndex: 2 }}>
+                                    <Typography
+                                        variant="h3"
+                                        sx={{
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            fontWeight: 'bold',
+                                            color: 'white',
+                                            mb: 2,
+                                            textShadow: '3px 3px 0 rgba(0,0,0,0.2)'
+                                        }}
+                                    >
+                                        Welcome, {auth?.user?.name?.split(' ')[0]}! 📚
+                                    </Typography>
+                                    <Typography
+                                        variant="h5"
+                                        sx={{
+                                            fontFamily: '"Comic Sans MS", cursive',
+                                            color: THEME.accent,
+                                            mb: 3
+                                        }}
+                                    >
+                                        {articles.length} amazing articles{articles.length !== 1 ? 's' : ''} waiting for you to explore!
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <Chip
+                                            icon={<span>📖</span>}
+                                            label={`${articles.length} Articles`}
+                                            sx={{
+                                                bgcolor: 'white',
+                                                color: THEME.blue,
+                                                fontFamily: '"Comic Sans MS", cursive',
+                                                fontSize: '1rem',
+                                                p: 2
+                                            }}
+                                        />
+                                        <Chip
+                                            icon={<span>💬</span>}
+                                            label={`${comments.length} Comments`}
+                                            sx={{
+                                                bgcolor: 'white',
+                                                color: THEME.green,
+                                                fontFamily: '"Comic Sans MS", cursive',
+                                                fontSize: '1rem',
+                                                p: 2
+                                            }}
+                                        />
+                                    </Box>
+                                </Box>
+                                
+                                {/* Floating icons in banner */}
+                                <Box sx={{ position: 'absolute', top: 20, right: 20, opacity: 0.2 }}>
+                                    <AutoStoriesIcon sx={{ fontSize: 100, color: 'white' }} />
+                                </Box>
+                            </Paper>
+
+                            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                                <Typography
+                                    variant="h4"
+                                    sx={{
+                                        fontFamily: '"Comic Sans MS", cursive',
+                                        fontWeight: 'bold',
+                                        color: THEME.primary,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}
+                                >
+                                    <MenuBookIcon sx={{ fontSize: 40, color: THEME.accent }} />
+                                    Article Library
+                                    <MenuBookIcon sx={{ fontSize: 40, color: THEME.accent }} />
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                                    Explore and comment on published articles
-                                </Typography>
+
+                                {categories.length > 0 && (
+                                    <Paper sx={{ 
+                                        p: 1, 
+                                        borderRadius: 8,
+                                        bgcolor: 'white',
+                                        border: `3px solid ${THEME.secondary}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1
+                                    }}>
+                                        <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.purple, ml: 1 }}>
+                                            🔍 Explore:
+                                        </Typography>
+                                        <Select
+                                            value={selectedCategory}
+                                            onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : '')}
+                                            displayEmpty
+                                            sx={{
+                                                minWidth: 200,
+                                                fontFamily: '"Comic Sans MS", cursive',
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    border: 'none'
+                                                }
+                                            }}
+                                        >
+                                            <MenuItem value="" sx={{ fontFamily: '"Comic Sans MS", cursive' }}>All Categories 📚</MenuItem>
+                                            {categories.map((c) => (
+                                                <MenuItem key={c.id} value={c.id} sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                                    {CATEGORY_ICONS[c.name.toLowerCase()] || '📖'} {c.name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </Paper>
+                                )}
                             </Box>
 
-                            {categories.length > 0 && (
-                                <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-                                    <Typography variant="body2" sx={{ mr: 2 }}>Category:</Typography>
-                                    <Select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : '')} displayEmpty sx={{ minWidth: 200 }}>
-                                        <MenuItem value="">All Categories</MenuItem>
-                                        {categories.map((c) => (
-                                            <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </Box>
-                            )}
-
                             {articles.length === 0 ? (
-                                <Card sx={{ borderRadius: '12px' }}>
-                                    <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                                        <Typography color="textSecondary" sx={{ fontSize: '1.1rem' }}>
-                                            No published articles yet. Check back soon!
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
+                                <Paper sx={{ 
+                                    p: 6,
+                                    borderRadius: 8,
+                                    background: `linear-gradient(135deg, ${alpha(THEME.accent, 0.2)} 0%, ${alpha(THEME.secondary, 0.2)} 100%)`,
+                                    border: `4px solid ${THEME.accent}`,
+                                    textAlign: 'center'
+                                }}>
+                                    <Typography variant="h3" sx={{ fontSize: '4rem', mb: 2 }}>
+                                        📚
+                                    </Typography>
+                                    <Typography variant="h4" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text, mb: 2 }}>
+                                        No articles yet!
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                        Check back soon for amazing adventures! ✨
+                                    </Typography>
+                                </Paper>
                             ) : (
-                                <Grid container spacing={3}>
-                                    {articles.filter(a => !selectedCategory || a.category?.id === selectedCategory).map((article) => (
+                                <Grid container spacing={4}>
+                                    {articles.filter(a => !selectedCategory || a.category?.id === selectedCategory).map((article, index) => (
                                         <Grid key={article.id} item xs={12}>
-                                            <Card
-                                                sx={{
-                                                    borderRadius: '12px',
-                                                    border: '1px solid #e2e8f0',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        transform: 'translateX(4px)',
-                                                        boxShadow: '0 8px 20px rgba(102, 126, 234, 0.1)',
-                                                    },
-                                                }}
-                                            >
-                                                <CardContent>
-                                                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                                                        <Avatar sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                                                            {article.writer.name.charAt(0)}
-                                                        </Avatar>
-                                                        <Box sx={{ flex: 1 }}>
-                                                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                                                {article.title}
-                                                            </Typography>
-                                                            <Typography variant="caption" color="textSecondary">
-                                                                By {article.writer.name} • {new Date(article.created_at).toLocaleDateString()}
+                                            <Grow in timeout={500 + index * 100}>
+                                                <Card
+                                                    sx={{
+                                                        borderRadius: 8,
+                                                        border: `4px solid ${THEME.secondary}`,
+                                                        boxShadow: `6px 6px 0 ${THEME.primary}`,
+                                                        bgcolor: 'white',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            transform: 'translateX(4px) translateY(-4px)',
+                                                            boxShadow: `8px 8px 0 ${THEME.primary}`
+                                                        }
+                                                    }}
+                                                >
+                                                    <CardContent sx={{ p: 4 }}>
+                                                        <Box sx={{ display: 'flex', gap: 3, mb: 3, flexWrap: 'wrap' }}>
+                                                            <Avatar
+                                                                sx={{
+                                                                    width: 60,
+                                                                    height: 60,
+                                                                    bgcolor: THEME.secondary,
+                                                                    border: `3px solid ${THEME.accent}`
+                                                                }}
+                                                            >
+                                                                {article.writer?.name?.charAt(0) || 'W'}
+                                                            </Avatar>
+                                                            <Box sx={{ flex: 1 }}>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 1 }}>
+                                                                    <Typography
+                                                                        variant="h5"
+                                                                        sx={{
+                                                                            fontFamily: '"Comic Sans MS", cursive',
+                                                                            fontWeight: 'bold',
+                                                                            color: THEME.text
+                                                                        }}
+                                                                    >
+                                                                        {article.title}
+                                                                    </Typography>
+                                                                    <Chip
+                                                                        icon={<span>✨</span>}
+                                                                        label="Published"
+                                                                        size="small"
+                                                                        sx={{
+                                                                            bgcolor: STATUS_COLORS.published.bg,
+                                                                            color: STATUS_COLORS.published.text,
+                                                                            fontFamily: '"Comic Sans MS", cursive'
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                                <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                                                    By {article.writer?.name || 'Unknown Author'} • {new Date(article.created_at).toLocaleDateString()}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Chip
+                                                                icon={<span>{CATEGORY_ICONS[article.category?.name?.toLowerCase()] || '📚'}</span>}
+                                                                label={article.category?.name || 'Uncategorized'}
+                                                                sx={{
+                                                                    bgcolor: THEME.blue,
+                                                                    color: 'white',
+                                                                    fontFamily: '"Comic Sans MS", cursive',
+                                                                    fontWeight: 'bold',
+                                                                    px: 2
+                                                                }}
+                                                            />
+                                                        </Box>
+
+                                                        <Divider sx={{ mb: 3, borderColor: THEME.accent, borderWidth: 2 }} />
+
+                                                        <Typography
+                                                            variant="body1"
+                                                            sx={{
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                color: THEME.text,
+                                                                lineHeight: 1.8,
+                                                                mb: 3
+                                                            }}
+                                                        >
+                                                            <div
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: article.content.substring(0, 200) + '...',
+                                                                }}
+                                                            />
+                                                        </Typography>
+
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                            <Badge
+                                                                badgeContent={article.comments?.length || 0}
+                                                                color="primary"
+                                                                sx={{
+                                                                    '& .MuiBadge-badge': {
+                                                                        bgcolor: THEME.secondary,
+                                                                        color: 'white',
+                                                                        fontFamily: '"Comic Sans MS", cursive'
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <ChatIcon sx={{ color: THEME.primary }} />
+                                                            </Badge>
+                                                            <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                                                {article.comments?.length || 0} comment{article.comments?.length !== 1 ? 's' : ''}
                                                             </Typography>
                                                         </Box>
-                                                        <Chip label={article.category.name} size="small" />
-                                                    </Box>
-                                                    <Divider sx={{ my: 2 }} />
-                                                    <Typography color="textSecondary" variant="body2" sx={{ lineHeight: 1.6 }}>
-                                                        <div
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: article.content.substring(0, 150) + '...',
+                                                    </CardContent>
+
+                                                    <CardActions sx={{ p: 4, pt: 0, gap: 2, flexWrap: 'wrap' }}>
+                                                        <Button
+                                                            size="large"
+                                                            startIcon={<CommentIcon />}
+                                                            onClick={() => handleOpenDialog(article)}
+                                                            sx={{
+                                                                bgcolor: THEME.blue,
+                                                                color: 'white',
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                fontSize: '1rem',
+                                                                px: 3,
+                                                                '&:hover': {
+                                                                    bgcolor: '#5A7DFF',
+                                                                    transform: 'scale(1.05)'
+                                                                }
                                                             }}
-                                                        />
-                                                    </Typography>
-                                                </CardContent>
-                                                <CardActions>
-                                                    <Button
-                                                        size="small"
-                                                        startIcon={<CommentIcon />}
-                                                        onClick={() => handleOpenDialog(article)}
-                                                        sx={{
-                                                            color: 'white',
-                                                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
-                                                            fontWeight: 600,
-                                                            borderRadius: '6px',
-                                                        }}
-                                                    >
-                                                        Comment
-                                                    </Button>
-                                                    <Button
-                                                        size="small"
-                                                        onClick={() => Inertia.get(route('articles.show', article.id))}
-                                                        sx={{
-                                                            ml: 1,
-                                                            color: '#334155',
-                                                            borderRadius: '6px',
-                                                        }}
-                                                    >
-                                                        Read More
-                                                    </Button>
-                                                    <Typography variant="caption" color="textSecondary" sx={{ ml: 'auto' }}>
-                                                        💬 {article.comments?.length || 0}
-                                                    </Typography>
-                                                </CardActions>
-                                            </Card>
+                                                        >
+                                                            Add Comment 💬
+                                                        </Button>
+                                                        <Button
+                                                            size="large"
+                                                            startIcon={<span>📖</span>}
+                                                            onClick={() => Inertia.get(route('articles.show', article.id))}
+                                                            sx={{
+                                                                bgcolor: THEME.secondary,
+                                                                color: 'white',
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                fontSize: '1rem',
+                                                                px: 3,
+                                                                '&:hover': {
+                                                                    bgcolor: '#3DBEB4',
+                                                                    transform: 'scale(1.05)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            Read Full Article
+                                                        </Button>
+                                                    </CardActions>
+                                                </Card>
+                                            </Grow>
                                         </Grid>
                                     ))}
                                 </Grid>
@@ -203,59 +447,130 @@ export default function Dashboard({ articles, comments, categories: serverCatego
 
             case 'comments':
                 return (
-                    <Fade in={activeNav === 'comments'}>
+                    <Fade in={activeNav === 'comments'} timeout={800}>
                         <Box>
                             <Box sx={{ mb: 4 }}>
-                                <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
-                                    My Comments
+                                <Typography
+                                    variant="h4"
+                                    sx={{
+                                        fontFamily: '"Comic Sans MS", cursive',
+                                        fontWeight: 'bold',
+                                        color: THEME.green,
+                                        mb: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}
+                                >
+                                    <ChatIcon sx={{ fontSize: 40 }} />
+                                    My Comment Collection
+                                    <ChatIcon sx={{ fontSize: 40 }} />
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                                    {comments.length} comment{comments.length !== 1 ? 's' : ''} you've made
+                                <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text, mb: 3 }}>
+                                    You've shared {comments.length} thought{comments.length !== 1 ? 's' : ''}! Keep it up! 🌟
                                 </Typography>
                             </Box>
 
                             {comments.length === 0 ? (
-                                <Card sx={{ borderRadius: '12px' }}>
-                                    <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                                        <Typography color="textSecondary">
-                                            You haven't commented on any articles yet. Share your thoughts!
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
+                                <Paper sx={{ 
+                                    p: 6,
+                                    borderRadius: 8,
+                                    background: `linear-gradient(135deg, ${alpha(THEME.accent, 0.2)} 0%, ${alpha(THEME.secondary, 0.2)} 100%)`,
+                                    border: `4px solid ${THEME.accent}`,
+                                    textAlign: 'center'
+                                }}>
+                                    <Typography variant="h3" sx={{ fontSize: '4rem', mb: 2 }}>
+                                        💭
+                                    </Typography>
+                                    <Typography variant="h4" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text, mb: 2 }}>
+                                        No comments yet!
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                                        Start sharing your thoughts on articles! 🎨
+                                    </Typography>
+                                </Paper>
                             ) : (
                                 <Paper
                                     sx={{
-                                        borderRadius: '12px',
-                                        background: 'white',
-                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                        overflow: 'hidden',
+                                        borderRadius: 8,
+                                        border: `4px solid ${THEME.green}`,
+                                        boxShadow: `6px 6px 0 ${THEME.green}`,
+                                        bgcolor: 'white',
+                                        overflow: 'hidden'
                                     }}
                                 >
                                     {comments.map((comment, index) => (
-                                        <Box
-                                            key={comment.id}
-                                            sx={{
-                                                p: 3,
-                                                borderBottom: index !== comments.length - 1 ? '1px solid #e2e8f0' : 'none',
-                                            }}
-                                        >
-                                            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                                                <Avatar sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                                                    P
-                                                </Avatar>
-                                                <Box sx={{ flex: 1 }}>
-                                                    <Typography sx={{ fontWeight: 700, color: '#1e293b' }}>
-                                                        {comment.article.title}
-                                                    </Typography>
-                                                    <Typography variant="caption" color="textSecondary">
-                                                        {new Date(comment.created_at).toLocaleDateString()}
-                                                    </Typography>
+                                        <Zoom in timeout={500 + index * 100} key={comment.id}>
+                                            <Box
+                                                sx={{
+                                                    p: 4,
+                                                    borderBottom: index !== comments.length - 1 ? `2px solid ${THEME.accent}` : 'none',
+                                                    '&:hover': {
+                                                        bgcolor: alpha(THEME.accent, 0.1)
+                                                    }
+                                                }}
+                                            >
+                                                <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+                                                    <Avatar
+                                                        sx={{
+                                                            bgcolor: THEME.purple,
+                                                            width: 50,
+                                                            height: 50,
+                                                            border: `3px solid ${THEME.accent}`
+                                                        }}
+                                                    >
+                                                        <PersonIcon />
+                                                    </Avatar>
+                                                    <Box sx={{ flex: 1 }}>
+                                                        <Typography
+                                                            variant="h6"
+                                                            sx={{
+                                                                fontFamily: '"Comic Sans MS", cursive',
+                                                                fontWeight: 'bold',
+                                                                color: THEME.blue,
+                                                                mb: 1
+                                                            }}
+                                                        >
+                                                            {comment.article?.title || 'Unknown Article'}
+                                                        </Typography>
+                                                        <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <CalendarIcon sx={{ fontSize: 14 }} />
+                                                            {new Date(comment.created_at).toLocaleDateString()} at {new Date(comment.created_at).toLocaleTimeString()}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Chip
+                                                        icon={<span>💬</span>}
+                                                        label="Your Comment"
+                                                        sx={{
+                                                            bgcolor: THEME.green,
+                                                            color: 'white',
+                                                            fontFamily: '"Comic Sans MS", cursive'
+                                                        }}
+                                                    />
                                                 </Box>
+                                                <Paper
+                                                    sx={{
+                                                        p: 3,
+                                                        ml: 8,
+                                                        bgcolor: alpha(THEME.secondary, 0.1),
+                                                        borderRadius: 4,
+                                                        border: `2px dashed ${THEME.secondary}`,
+                                                        position: 'relative'
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        variant="body1"
+                                                        sx={{
+                                                            fontFamily: '"Comic Sans MS", cursive',
+                                                            color: THEME.text,
+                                                            fontStyle: 'italic'
+                                                        }}
+                                                    >
+                                                        "{comment.content}"
+                                                    </Typography>
+                                                </Paper>
                                             </Box>
-                                            <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.6, pl: 7 }}>
-                                                {comment.content}
-                                            </Typography>
-                                        </Box>
+                                        </Zoom>
                                     ))}
                                 </Paper>
                             )}
@@ -269,83 +584,147 @@ export default function Dashboard({ articles, comments, categories: serverCatego
     };
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
+        <Box sx={{ 
+            display: 'flex', 
+            minHeight: '100vh', 
+            background: `linear-gradient(135deg, ${THEME.background} 0%, ${alpha(THEME.accent, 0.1)} 100%)`,
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            {/* Floating Background Icons */}
+            <Box sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                pointerEvents: 'none',
+                zIndex: 0,
+                opacity: 0.1
+            }}>
+                {floatingIcons.map((item, index) => (
+                    <Box
+                        key={index}
+                        sx={{
+                            position: 'absolute',
+                            left: `${item.left}%`,
+                            top: `${item.top}%`,
+                            color: [THEME.primary, THEME.secondary, THEME.accent, THEME.purple][Math.floor(Math.random() * 4)],
+                            fontSize: item.size,
+                            animation: `float ${item.duration}s infinite ease-in-out`,
+                            animationDelay: `${item.delay}s`,
+                            '@keyframes float': {
+                                '0%': { transform: 'translateY(0px) rotate(0deg)' },
+                                '50%': { transform: 'translateY(-20px) rotate(10deg)' },
+                                '100%': { transform: 'translateY(0px) rotate(0deg)' }
+                            }
+                        }}
+                    >
+                        {item.icon}
+                    </Box>
+                ))}
+            </Box>
+
             {/* Header */}
             <AppBar
                 position="fixed"
                 sx={{
-                    background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.secondary} 100%)`,
-                    boxShadow: '0 8px 32px rgba(0, 180, 216, 0.15)',
+                    background: `linear-gradient(135deg, ${THEME.green} 0%, ${THEME.blue} 100%)`,
+                    borderBottom: `4px solid ${THEME.accent}`,
+                    boxShadow: `0 8px 0 ${alpha(THEME.green, 0.5)}`,
                     zIndex: 1201,
-                    backdropFilter: 'blur(10px)',
                     height: 80
                 }}
             >
-                <Toolbar sx={{ minHeight: 80 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 800, flexGrow: 1, fontSize: '1.8rem', letterSpacing: '-0.3px' }}>
-                        Student Dashboard
-                    </Typography>
-                    
+                <Toolbar sx={{ minHeight: 80, position: 'relative' }}>
+                    <IconButton
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        sx={{
+                            color: 'white',
+                            mr: 2,
+                            bgcolor: alpha(THEME.accent, 0.3),
+                            '&:hover': { bgcolor: alpha(THEME.accent, 0.5) }
+                        }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+                        <Box
+                            sx={{
+                                bgcolor: THEME.accent,
+                                borderRadius: '50%',
+                                width: 50,
+                                height: 50,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                animation: 'bounce 2s infinite',
+                                '@keyframes bounce': {
+                                    '0%, 100%': { transform: 'translateY(0)' },
+                                    '50%': { transform: 'translateY(-5px)' }
+                                }
+                            }}
+                        >
+                            <AutoStoriesIcon sx={{ fontSize: 30, color: THEME.green }} />
+                        </Box>
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontFamily: '"Comic Sans MS", cursive',
+                                fontWeight: 'bold',
+                                color: 'white',
+                                textShadow: '3px 3px 0 rgba(0,0,0,0.2)'
+                            }}
+                        >
+                            Article Explorer's Club
+                        </Typography>
+                    </Box>
+
                     {/* Home Button */}
                     <IconButton
                         onClick={() => Inertia.visit('/')}
-                        sx={{ 
-                            color: 'white', 
+                        sx={{
+                            color: 'white',
                             mr: 2,
                             width: 48,
                             height: 48,
-                            background: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                            transition: 'all 0.3s ease',
+                            bgcolor: alpha(THEME.accent, 0.3),
+                            border: `2px solid ${THEME.accent}`,
                             '&:hover': {
-                                background: 'rgba(255,255,255,0.25)',
-                                transform: 'scale(1.05)',
-                                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                            },
-                            '&:active': {
-                                transform: 'scale(0.95)',
+                                bgcolor: alpha(THEME.accent, 0.5),
+                                transform: 'scale(1.1)'
                             }
                         }}
-                        title="Home"
                     >
-                        <HomeIcon sx={{ fontSize: 20 }} />
+                        <HomeIcon sx={{ fontSize: 24 }} />
                     </IconButton>
-                    
+
+                    {/* Profile Menu */}
                     <IconButton
                         onClick={(e) => setProfileAnchor(e.currentTarget)}
-                        sx={{ 
-                            color: 'white', 
-                            ml: 2,
+                        sx={{
+                            color: 'white',
                             width: 48,
                             height: 48,
-                            background: 'rgba(255,255,255,0.25)',
-                            backdropFilter: 'blur(10px)',
-                            border: '2px solid rgba(255,255,255,0.3)',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                            transition: 'all 0.3s ease',
+                            bgcolor: alpha(THEME.accent, 0.3),
+                            border: `2px solid ${THEME.accent}`,
                             '&:hover': {
-                                background: 'rgba(255,255,255,0.35)',
-                                transform: 'scale(1.05)',
-                                boxShadow: '0 6px 25px rgba(0,0,0,0.25)',
-                            },
-                            '&:active': {
-                                transform: 'scale(0.95)',
+                                bgcolor: alpha(THEME.accent, 0.5),
+                                transform: 'scale(1.1)'
                             }
                         }}
                     >
-                        <Avatar sx={{ 
-                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)', 
-                            width: 36, 
-                            height: 36,
+                        <Avatar sx={{
+                            bgcolor: THEME.accent,
+                            color: THEME.green,
                             fontWeight: 'bold',
-                            fontSize: '1rem',
-                            border: '2px solid rgba(255,255,255,0.5)'
+                            border: '2px solid white'
                         }}>
                             {auth?.user?.name?.charAt(0) || 'U'}
                         </Avatar>
                     </IconButton>
+
                     <Menu
                         anchorEl={profileAnchor}
                         open={Boolean(profileAnchor)}
@@ -353,13 +732,14 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                         PaperProps={{
                             sx: {
                                 minWidth: 250,
-                                borderRadius: '12px',
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                                border: '1px solid rgba(0, 0, 0, 0.08)',
+                                borderRadius: 8,
+                                border: `3px solid ${THEME.secondary}`,
+                                boxShadow: `4px 4px 0 ${THEME.primary}`,
+                                bgcolor: 'white'
                             }
                         }}
                     >
-                        <MenuItem disabled>
+                        <MenuItem disabled sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
                             <Typography variant="caption" sx={{ fontWeight: 600 }}>{auth?.user?.name}</Typography>
                         </MenuItem>
                         <Divider />
@@ -367,36 +747,38 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                             setProfileAnchor(null);
                             Inertia.get(route('profile.edit'));
                         }}>
-                            <AccountCircleIcon sx={{ mr: 1, fontSize: 18 }} />
-                            Profile
+                            <AccountCircleIcon sx={{ mr: 1, fontSize: 18, color: THEME.blue }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive' }}>My Profile</Typography>
                         </MenuItem>
                         <MenuItem onClick={() => {
                             setProfileAnchor(null);
                             Inertia.post('/logout');
                         }}>
-                            <LogoutIcon sx={{ mr: 1, fontSize: 18, color: '#e65100' }} />
-                            Log Out
+                            <LogoutIcon sx={{ mr: 1, fontSize: 18, color: THEME.primary }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive' }}>Log Out</Typography>
                         </MenuItem>
                         <Divider />
                         <MenuItem
                             onClick={() => {
                                 setProfileAnchor(null);
-                                window.location.href = '/sample/switch/writer';
+                                window.location.href = '/switch/writer';
                             }}
-                            sx={{ fontSize: '0.85rem', color: '#667eea' }}
                         >
-                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16 }} />
-                             Writer
+                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16, color: THEME.orange }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '0.9rem' }}>
+                                Become a Writer ✍️
+                            </Typography>
                         </MenuItem>
                         <MenuItem
                             onClick={() => {
                                 setProfileAnchor(null);
-                                window.location.href = '/sample/switch/editor';
+                                window.location.href = '/switch/editor';
                             }}
-                            sx={{ fontSize: '0.85rem', color: '#667eea' }}
                         >
-                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16 }} />
-                            Editor
+                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16, color: THEME.purple }} />
+                            <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '0.9rem' }}>
+                                Become an Editor 📝
+                            </Typography>
                         </MenuItem>
                     </Menu>
                 </Toolbar>
@@ -404,37 +786,50 @@ export default function Dashboard({ articles, comments, categories: serverCatego
 
             {/* Sidebar */}
             <Drawer
-                variant="permanent"
+                variant="persistent"
+                anchor="left"
+                open={sidebarOpen}
                 sx={{
-                    width: DRAWER_WIDTH,
+                    width: sidebarOpen ? DRAWER_WIDTH : 0,
                     flexShrink: 0,
                     '& .MuiDrawer-paper': {
                         width: DRAWER_WIDTH,
                         boxSizing: 'border-box',
-                        background: 'white',
-                        borderRight: '1px solid #e2e8f0',
+                        background: `linear-gradient(135deg, ${alpha(THEME.background, 0.9)} 0%, white 100%)`,
+                        borderRight: `4px solid ${THEME.accent}`,
                         mt: '80px',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'width 0.3s ease'
                     },
                 }}
             >
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 3 }}>
                     <List>
                         <ListItem
                             button
                             onClick={() => setActiveNav('articles')}
                             sx={{
-                                borderRadius: '8px',
+                                borderRadius: 8,
                                 mb: 1,
-                                background: activeNav === 'articles' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
+                                bgcolor: activeNav === 'articles' ? alpha(THEME.accent, 0.3) : 'transparent',
+                                border: activeNav === 'articles' ? `2px solid ${THEME.blue}` : 'none',
+                                '&:hover': { bgcolor: alpha(THEME.accent, 0.2) }
                             }}
                         >
-                            <ListItemIcon sx={{ color: activeNav === 'articles' ? '#667eea' : '#64748b' }}>
-                                <MenuBookIcon />
+                            <ListItemIcon>
+                                <MenuBookIcon sx={{ color: activeNav === 'articles' ? THEME.blue : THEME.text }} />
                             </ListItemIcon>
                             <ListItemText
-                                primary="Published Articles"
-                                secondary={articles.length}
+                                primary={
+                                    <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', color: activeNav === 'articles' ? THEME.blue : THEME.text }}>
+                                        Article Library
+                                    </Typography>
+                                }
+                                secondary={
+                                    <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                        {articles.length} articles
+                                    </Typography>
+                                }
                             />
                         </ListItem>
 
@@ -442,20 +837,62 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                             button
                             onClick={() => setActiveNav('comments')}
                             sx={{
-                                borderRadius: '8px',
-                                background: activeNav === 'comments' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
+                                borderRadius: 8,
+                                bgcolor: activeNav === 'comments' ? alpha(THEME.accent, 0.3) : 'transparent',
+                                border: activeNav === 'comments' ? `2px solid ${THEME.green}` : 'none',
+                                '&:hover': { bgcolor: alpha(THEME.accent, 0.2) }
                             }}
                         >
-                            <ListItemIcon sx={{ color: activeNav === 'comments' ? '#667eea' : '#64748b' }}>
-                                <ChatIcon />
+                            <ListItemIcon>
+                                <ChatIcon sx={{ color: activeNav === 'comments' ? THEME.green : THEME.text }} />
                             </ListItemIcon>
                             <ListItemText
-                                primary="My Comments"
-                                secondary={comments.length}
+                                primary={
+                                    <Typography sx={{ fontFamily: '"Comic Sans MS", cursive', color: activeNav === 'comments' ? THEME.green : THEME.text }}>
+                                        My Comments
+                                    </Typography>
+                                }
+                                secondary={
+                                    <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                        {comments.length} comments
+                                    </Typography>
+                                }
                             />
                         </ListItem>
                     </List>
+
+                    <Divider sx={{ my: 3, borderColor: THEME.accent }} />
+
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text }}>
+                            ✨ Every comment makes a writer smile! ✨
+                        </Typography>
+                    </Box>
+
+                    {/* Reading Stats */}
+                    <Paper sx={{ mt: 3, p: 2, bgcolor: alpha(THEME.accent, 0.2), borderRadius: 4 }}>
+                        <Typography variant="subtitle2" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.purple, mb: 2, textAlign: 'center' }}>
+                            📊 Your Reading Stats
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.blue }}>
+                                    {articles.length}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                    Articles Read
+                                </Typography>
+                            </Box>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.green }}>
+                                    {comments.length}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontFamily: '"Comic Sans MS", cursive' }}>
+                                    Comments
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Paper>
                 </Box>
             </Drawer>
 
@@ -465,50 +902,135 @@ export default function Dashboard({ articles, comments, categories: serverCatego
                 sx={{
                     flexGrow: 1,
                     mt: '80px',
-                    p: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
+                    p: 4,
+                    transition: 'margin-left 0.3s ease',
+                    ml: sidebarOpen ? `${DRAWER_WIDTH}px` : 0,
+                    position: 'relative',
+                    zIndex: 1
                 }}
             >
                 <Container maxWidth="lg" sx={{ flexGrow: 1 }}>
                     {renderMainContent()}
                 </Container>
-
             </Box>
 
             {/* Comment Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)', color: 'white' }}>
-                    Comment on: {selectedArticle?.title}
+            <Dialog 
+                open={openDialog} 
+                onClose={handleCloseDialog} 
+                maxWidth="sm" 
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 8,
+                        border: `4px solid ${THEME.secondary}`,
+                        boxShadow: `8px 8px 0 ${THEME.primary}`,
+                        bgcolor: THEME.background
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    fontFamily: '"Comic Sans MS", cursive',
+                    fontWeight: 'bold',
+                    background: `linear-gradient(135deg, ${THEME.blue} 0%, ${THEME.purple} 100%)`,
+                    color: 'white',
+                    borderBottom: `4px solid ${THEME.accent}`,
+                    fontSize: '1.5rem'
+                }}>
+                    💬 Share Your Thoughts
                 </DialogTitle>
-                <DialogContent sx={{ pt: 3 }}>
+                <DialogContent sx={{ pt: 4 }}>
+                    <Typography variant="subtitle1" sx={{ fontFamily: '"Comic Sans MS", cursive', color: THEME.text, mb: 2 }}>
+                        On: {selectedArticle?.title}
+                    </Typography>
                     <TextField
                         autoFocus
                         fullWidth
                         multiline
                         rows={5}
-                        placeholder="Share your thoughts..."
+                        placeholder="What did you think about this story? ✨"
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         variant="outlined"
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                fontFamily: '"Comic Sans MS", cursive',
+                                '& fieldset': {
+                                    borderColor: THEME.secondary,
+                                    borderWidth: 3
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: THEME.primary
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: THEME.accent
+                                }
+                            }
+                        }}
                     />
                 </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={handleCloseDialog}>Cancel</Button>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button 
+                        onClick={handleCloseDialog}
+                        sx={{
+                            fontFamily: '"Comic Sans MS", cursive',
+                            color: THEME.text,
+                            border: `2px solid ${THEME.secondary}`,
+                            borderRadius: 40,
+                            px: 3
+                        }}
+                    >
+                        Maybe Later
+                    </Button>
                     <Button
                         onClick={postComment}
                         disabled={!commentText.trim()}
                         variant="contained"
                         startIcon={<SendIcon />}
                         sx={{
-                            background: 'linear-gradient(135deg, #00b4d8 0%, #0077b6 100%)',
-                            fontWeight: 700,
+                            bgcolor: THEME.green,
+                            color: 'white',
+                            fontFamily: '"Comic Sans MS", cursive',
+                            fontSize: '1.1rem',
+                            borderRadius: 40,
+                            px: 4,
+                            '&:hover': {
+                                bgcolor: '#4CAF50',
+                                transform: 'scale(1.05)'
+                            },
+                            '&:disabled': {
+                                bgcolor: '#ccc'
+                            }
                         }}
                     >
-                        Post Comment
+                        Post Comment ✨
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Back to Top Button */}
+            <IconButton
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                sx={{
+                    position: 'fixed',
+                    bottom: 20,
+                    right: 20,
+                    bgcolor: THEME.accent,
+                    color: THEME.green,
+                    width: 56,
+                    height: 56,
+                    border: `3px solid ${THEME.secondary}`,
+                    '&:hover': {
+                        bgcolor: THEME.orange,
+                        color: 'white',
+                        transform: 'scale(1.1) rotate(360deg)'
+                    },
+                    transition: 'all 0.5s ease',
+                    zIndex: 1200
+                }}
+            >
+                <RocketIcon />
+            </IconButton>
         </Box>
     );
 }

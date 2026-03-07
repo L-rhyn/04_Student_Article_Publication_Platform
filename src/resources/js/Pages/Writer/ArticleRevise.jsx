@@ -454,7 +454,43 @@ export default function ArticleRevise({ article, categories }) {
                                         showCharsCounter: true,
                                         showWordsCounter: true,
                                         showXPathInStatusbar: false,
-                                        height: 400
+                                        height: 400,
+                                        uploader: {
+                                            url: route('writer.upload.image'),
+                                            format: 'json',
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                                            },
+                                            prepareData: function (formdata) {
+                                                // Jodit will automatically add the file as 'upload'
+                                                return formdata;
+                                            },
+                                            isSuccess: function (resp) {
+                                                return resp.uploaded === 1;
+                                            },
+                                            getMessage: function (resp) {
+                                                return resp.msg || 'Upload failed';
+                                            },
+                                            process: function (resp) {
+                                                return {
+                                                    files: [resp.url],
+                                                    path: resp.url,
+                                                    baseurl: '',
+                                                    newfilename: resp.fileName
+                                                };
+                                            },
+                                            error: function (e) {
+                                                console.error('Image upload error:', e);
+                                                alert('Image upload failed. Please try again.');
+                                            }
+                                        },
+                                        image: {
+                                            openOnDblClick: true,
+                                            editSrc: true,
+                                            useImageEditor: false,
+                                            editButtons: ['imageRemove']
+                                        }
                                     }}
                                 />
                             </Paper>

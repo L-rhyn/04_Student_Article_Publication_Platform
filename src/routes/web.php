@@ -51,6 +51,7 @@ Route::middleware(['auth'])->prefix('writer')->name('writer.')->group(function (
     Route::put('/articles/{article}', [\App\Http\Controllers\WriterController::class, 'update'])->name('articles.update');
     Route::post('/articles/{article}/submit', [\App\Http\Controllers\WriterController::class, 'submit'])->name('articles.submit');
     Route::post('/articles/{article}/revise', [\App\Http\Controllers\WriterController::class, 'revise'])->name('articles.revise');
+    Route::post('/upload-image', [\App\Http\Controllers\WriterController::class, 'uploadImage'])->name('upload.image');
 });
 
 Route::middleware(['auth'])->prefix('editor')->name('editor.')->group(function () {

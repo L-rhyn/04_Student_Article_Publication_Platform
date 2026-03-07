@@ -232,4 +232,36 @@ class WriterController extends Controller
         
         return redirect()->route('writer.dashboard')->with('success','Article revised and submitted to editor');
     }
+
+    public function uploadImage(Request $request)
+    {
+        // Check if user has writer role
+        $user = auth()->user();
+        $userRoles = $user->roles->pluck('name')->toArray();
+
+        if (!in_array('writer', $userRoles)) {
+            abort(403);
+        }
+
+        $request->validate([
+            'upload' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // 2MB max
+        ]);
+
+        $image = $request->file('upload');
+
+        // Generate a unique filename
+        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+        // Store the image in storage/app/public/article-images directory
+        $path = $image->storeAs('article-images', $filename, 'public');
+
+        // Return the URL for Jodit
+        $url = asset('storage/' . $path);
+
+        return response()->json([
+            'uploaded' => 1,
+            'fileName' => $filename,
+            'url' => $url
+        ]);
+    }
 }

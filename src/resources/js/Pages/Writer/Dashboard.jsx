@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Inertia } from '@inertiajs/inertia';
+import axios from 'axios';
 import {
     Box,
     Container,
@@ -29,38 +30,111 @@ import {
     IconButton,
     InputAdornment,
     Badge,
-    ListItemText as MuiListItemText,
+    LinearProgress,
+    Stack,
+    alpha,
+    Tooltip,
+    Zoom,
+    Fab
 } from '@mui/material';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import {
+    AccountCircle as AccountCircleIcon,
+    Logout as LogoutIcon,
+    SwapHoriz as SwapHorizIcon,
+    Home as HomeIcon,
+    Edit as EditIcon,
+    Send as SendIcon,
+    Visibility as VisibilityIcon,
+    Search as SearchIcon,
+    Add as AddIcon,
+    Create as CreateIcon,
+    Done as DoneIcon,
+    MoreVert as MoreVertIcon,
+    Dashboard as DashboardIcon,
+    Notifications as NotificationsIcon,
+    NotificationsNone as NotificationsNoneIcon,
+    AutoStories as AutoStoriesIcon,
+    Psychology as PsychologyIcon,
+    Lightbulb as LightbulbIcon,
+    RocketLaunch as RocketLaunchIcon,
+    Save as SaveIcon,
+    Publish as PublishIcon,
+    Delete as DeleteIcon,
+    Star as StarIcon,
+    TrendingUp as TrendingUpIcon,
+    Timeline as TimelineIcon,
+    MenuBook as MenuBookIcon,
+    FormatQuote as FormatQuoteIcon,
+    Brush as BrushIcon,
+    EmojiEvents as EmojiEventsIcon
+} from '@mui/icons-material';
 import JoditEditor from 'jodit-react';
-import EditIcon from '@mui/icons-material/Edit';
-import SendIcon from '@mui/icons-material/Send';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
-import CreateIcon from '@mui/icons-material/Create';
-import DoneIcon from '@mui/icons-material/Done';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+
+// Creative Writing Theme Color Palette
+const THEME = {
+    primary: '#FF6B6B',        // Coral Red - energetic and creative
+    primaryLight: '#FF8E8E',
+    primaryDark: '#E84545',
+    secondary: '#4ECDC4',      // Mint - calm and focused
+    secondaryLight: '#6FD1C9',
+    secondaryDark: '#3AA89F',
+    accent: '#FFE66D',         // Warm Yellow - inspiration
+    accentLight: '#FFF0A5',
+    accentDark: '#F7D44A',
+    success: '#95E1D3',        // Soft Green - achievement
+    warning: '#FFA07A',        // Light Salmon - attention
+    error: '#FF6B6B',          // Coral - errors
+    background: {
+        main: '#FAF9F8',       // Warm White
+        paper: '#FFFFFF',
+        gradient: 'linear-gradient(135deg, #FFF9F5 0%, #F8F3F0 100%)'
+    },
+    text: {
+        primary: '#2D4059',     // Deep Blue-Gray
+        secondary: '#5C6B7E',
+        light: '#8D9AA9',
+        accent: '#FF6B6B'
+    },
+    gradient: {
+        primary: 'linear-gradient(135deg, #FF6B6B 0%, #E84545 100%)',
+        secondary: 'linear-gradient(135deg, #4ECDC4 0%, #3AA89F 100%)',
+        accent: 'linear-gradient(135deg, #FFE66D 0%, #F7D44A 100%)',
+        sunset: 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)'
+    }
+};
 
 const STATUS_COLORS = {
-    draft: { bg: '#f0f4ff', text: '#4f46e5', border: '#e0e7ff' },
-    submitted: { bg: '#f0fdf4', text: '#16a34a', border: '#dcfce7' },
-    needs_revision: { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
-    published: { bg: '#f8fafc', text: '#64748b', border: '#e2e8f0' },
+    draft: { 
+        bg: '#F8F3F0', 
+        text: '#2D4059', 
+        border: '#E8E0DA',
+        gradient: 'linear-gradient(135deg, #F8F3F0 0%, #ECE5E0 100%)',
+        icon: <CreateIcon />
+    },
+    submitted: { 
+        bg: '#E6F7F5', 
+        text: '#4ECDC4', 
+        border: '#C1F0EB',
+        gradient: 'linear-gradient(135deg, #E6F7F5 0%, #D1F0EC 100%)',
+        icon: <SendIcon />
+    },
+    needs_revision: { 
+        bg: '#FFF3E6', 
+        text: '#FFA07A', 
+        border: '#FFE4D4',
+        gradient: 'linear-gradient(135deg, #FFF3E6 0%, #FFE8DC 100%)',
+        icon: <BrushIcon />
+    },
+    published: { 
+        bg: '#F0F6FA', 
+        text: '#5C6B7E', 
+        border: '#E1E8F0',
+        gradient: 'linear-gradient(135deg, #F0F6FA 0%, #E5EAF0)',
+        icon: <RocketLaunchIcon />
+    },
 };
 
-const DRAWER_WIDTH = 280;
-const THEME = {
-    primary: '#4f46e5',
-    success: '#16a34a',
-    warning: '#ea580c',
-    surface: 'rgba(255, 255, 255, 0.95)',
-};
+const DRAWER_WIDTH = 300;
 
 export default function Dashboard({ articles, categories, auth, notifications }) {
     const [activeNav, setActiveNav] = useState('dashboard');
@@ -69,6 +143,35 @@ export default function Dashboard({ articles, categories, auth, notifications })
     const [categorySearch, setCategorySearch] = useState('');
     const [notificationAnchor, setNotificationAnchor] = useState(null);
     const [readNotifications, setReadNotifications] = useState(new Set());
+    const [writingProgress, setWritingProgress] = useState(0);
+    const [inspirationQuote, setInspirationQuote] = useState('');
+
+    // Inspirational quotes for writers
+    const quotes = [
+        "The art of writing is the art of discovering what you believe.",
+        "Start writing, no matter what. The water does not flow until the faucet is turned on.",
+        "You can always edit a bad page. You can't edit a blank page.",
+        "The scariest moment is always just before you start.",
+        "Fill your paper with the breathings of your heart.",
+        "Write what should not be forgotten.",
+        "The first draft is just you telling yourself the story."
+    ];
+
+    useEffect(() => {
+        // Set random inspirational quote
+        setInspirationQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+    }, []);
+
+    useEffect(() => {
+        // Calculate writing progress based on content length
+        if (form.content) {
+            const wordCount = form.content.split(/\s+/).length;
+            const progress = Math.min((wordCount / 500) * 100, 100);
+            setWritingProgress(progress);
+        } else {
+            setWritingProgress(0);
+        }
+    }, [form.content]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -82,9 +185,46 @@ export default function Dashboard({ articles, categories, auth, notifications })
     // Calculate unread notifications count
     const unreadCount = notifications?.filter(n => !readNotifications.has(n.id)).length || 0;
 
+    // Initialize read notifications from actual read status
+    useEffect(() => {
+        if (notifications) {
+            const readIds = new Set();
+            notifications.forEach(notification => {
+                if (notification.read_at) {
+                    readIds.add(notification.id);
+                }
+            });
+            setReadNotifications(readIds);
+        }
+    }, [notifications]);
+
     const draftArticles = articles.filter(a => a.status.name === 'draft');
     const submittedArticles = articles.filter(a => a.status.name === 'submitted');
     const revisedArticles = articles.filter(a => a.status.name === 'needs_revision');
+    const publishedArticles = articles.filter(a => a.status.name === 'published');
+
+    const markNotificationAsRead = async (notificationId) => {
+        try {
+            await axios.post(route('notifications.mark-read'), {
+                notification_id: notificationId
+            });
+            setReadNotifications(prev => new Set(prev).add(notificationId));
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
+    const markAllNotificationsAsRead = async () => {
+        try {
+            await axios.post(route('notifications.mark-all-read'));
+            if (notifications) {
+                const allIds = notifications.map(n => n.id);
+                setReadNotifications(new Set(allIds));
+            }
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
+        }
+    };
 
     // Filter draft articles by search (title or category)
     const filteredDraftArticles = draftArticles.filter(article => 
@@ -93,265 +233,631 @@ export default function Dashboard({ articles, categories, auth, notifications })
         article.title.toLowerCase().includes(categorySearch.toLowerCase())
     );
 
+    const getWordCount = (content) => {
+        return content ? content.split(/\s+/).length : 0;
+    };
+
+    const getReadTime = (content) => {
+        const wordsPerMinute = 200;
+        const wordCount = getWordCount(content);
+        const readTime = Math.ceil(wordCount / wordsPerMinute);
+        return `${readTime} min read`;
+    };
+
     const renderMainContent = () => {
         switch (activeNav) {
             case 'dashboard':
                 return (
-                    <Fade in={activeNav === 'dashboard'}>
-                        <Container maxWidth="lg">
-                            <Typography variant="h4" sx={{ mb: 4, fontWeight: 800, color: '#111827' }}>
-                                Article Statistics
+                    <Fade in={activeNav === 'dashboard'} timeout={500}>
+                        <Box>
+                            {/* Welcome Header with Quote */}
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 4,
+                                    mb: 4,
+                                    borderRadius: '16px',
+                                    background: THEME.gradient.sunset,
+                                    color: 'white',
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                                    <Typography variant="h4" sx={{ fontWeight: 800, mb: 2, fontFamily: '"Playfair Display", serif' }}>
+                                        Welcome back, {auth?.user?.name?.split(' ')[0] || 'Writer'}!
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ opacity: 0.9, mb: 2, fontStyle: 'italic' }}>
+                                        "{inspirationQuote}"
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <Chip
+                                            icon={<EmojiEventsIcon />}
+                                            label={`${publishedArticles.length} Articles Published`}
+                                            sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                                        />
+                                        <Chip
+                                            icon={<TrendingUpIcon />}
+                                            label={`${draftArticles.length} Works in Progress`}
+                                            sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                                        />
+                                    </Box>
+                                </Box>
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: -20,
+                                        right: -20,
+                                        width: 200,
+                                        height: 200,
+                                        borderRadius: '50%',
+                                        background: 'rgba(255,255,255,0.1)',
+                                        zIndex: 0
+                                    }}
+                                />
+                            </Paper>
+
+                            {/* Quick Stats */}
+                            <Typography variant="h5" sx={{ mb: 3, fontWeight: 700, color: THEME.text.primary }}>
+                                Your Writing Studio
                             </Typography>
                             
+                            <Grid container spacing={3} sx={{ mb: 4 }}>
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Zoom in timeout={300}>
+                                        <Card
+                                            elevation={0}
+                                            sx={{
+                                                borderRadius: '16px',
+                                                background: 'white',
+                                                border: `1px solid ${alpha(THEME.primary, 0.1)}`,
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-4px)',
+                                                    boxShadow: `0 12px 24px ${alpha(THEME.primary, 0.15)}`
+                                                }
+                                            }}
+                                        >
+                                            <CardContent>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                                    <Box
+                                                        sx={{
+                                                            width: 48,
+                                                            height: 48,
+                                                            borderRadius: '12px',
+                                                            background: alpha(THEME.primary, 0.1),
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: THEME.primary
+                                                        }}
+                                                    >
+                                                        <CreateIcon />
+                                                    </Box>
+                                                    <Chip
+                                                        label="Drafts"
+                                                        size="small"
+                                                        sx={{ bgcolor: alpha(THEME.primary, 0.1), color: THEME.primary }}
+                                                    />
+                                                </Box>
+                                                <Typography variant="h3" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
+                                                    {draftArticles.length}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                                    Works in Progress
+                                                </Typography>
+                                                <LinearProgress
+                                                    variant="determinate"
+                                                    value={(draftArticles.length / (articles.length || 1)) * 100}
+                                                    sx={{
+                                                        mt: 2,
+                                                        height: 4,
+                                                        borderRadius: 2,
+                                                        bgcolor: alpha(THEME.primary, 0.1),
+                                                        '& .MuiLinearProgress-bar': {
+                                                            background: THEME.gradient.primary,
+                                                            borderRadius: 2
+                                                        }
+                                                    }}
+                                                />
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Zoom in timeout={400}>
+                                        <Card
+                                            elevation={0}
+                                            sx={{
+                                                borderRadius: '16px',
+                                                background: 'white',
+                                                border: `1px solid ${alpha(THEME.secondary, 0.1)}`,
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-4px)',
+                                                    boxShadow: `0 12px 24px ${alpha(THEME.secondary, 0.15)}`
+                                                }
+                                            }}
+                                        >
+                                            <CardContent>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                                    <Box
+                                                        sx={{
+                                                            width: 48,
+                                                            height: 48,
+                                                            borderRadius: '12px',
+                                                            background: alpha(THEME.secondary, 0.1),
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: THEME.secondary
+                                                        }}
+                                                    >
+                                                        <SendIcon />
+                                                    </Box>
+                                                    <Chip
+                                                        label="Submitted"
+                                                        size="small"
+                                                        sx={{ bgcolor: alpha(THEME.secondary, 0.1), color: THEME.secondary }}
+                                                    />
+                                                </Box>
+                                                <Typography variant="h3" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
+                                                    {submittedArticles.length}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                                    Under Review
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Zoom in timeout={500}>
+                                        <Card
+                                            elevation={0}
+                                            sx={{
+                                                borderRadius: '16px',
+                                                background: 'white',
+                                                border: `1px solid ${alpha(THEME.warning, 0.1)}`,
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-4px)',
+                                                    boxShadow: `0 12px 24px ${alpha(THEME.warning, 0.15)}`
+                                                }
+                                            }}
+                                        >
+                                            <CardContent>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                                    <Box
+                                                        sx={{
+                                                            width: 48,
+                                                            height: 48,
+                                                            borderRadius: '12px',
+                                                            background: alpha(THEME.warning, 0.1),
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: THEME.warning
+                                                        }}
+                                                    >
+                                                        <BrushIcon />
+                                                    </Box>
+                                                    <Chip
+                                                        label="Need Revision"
+                                                        size="small"
+                                                        sx={{ bgcolor: alpha(THEME.warning, 0.1), color: THEME.warning }}
+                                                    />
+                                                </Box>
+                                                <Typography variant="h3" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
+                                                    {revisedArticles.length}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                                    Awaiting Edits
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Zoom in timeout={600}>
+                                        <Card
+                                            elevation={0}
+                                            sx={{
+                                                borderRadius: '16px',
+                                                background: 'white',
+                                                border: `1px solid ${alpha(THEME.success, 0.1)}`,
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-4px)',
+                                                    boxShadow: `0 12px 24px ${alpha(THEME.success, 0.15)}`
+                                                }
+                                            }}
+                                        >
+                                            <CardContent>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                                    <Box
+                                                        sx={{
+                                                            width: 48,
+                                                            height: 48,
+                                                            borderRadius: '12px',
+                                                            background: alpha(THEME.success, 0.1),
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: THEME.success
+                                                        }}
+                                                    >
+                                                        <RocketLaunchIcon />
+                                                    </Box>
+                                                    <Chip
+                                                        label="Published"
+                                                        size="small"
+                                                        sx={{ bgcolor: alpha(THEME.success, 0.1), color: THEME.success }}
+                                                    />
+                                                </Box>
+                                                <Typography variant="h3" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
+                                                    {publishedArticles.length}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                                    Live Articles
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Zoom>
+                                </Grid>
+                            </Grid>
+
+                            {/* Writing Tips & Inspiration */}
                             <Grid container spacing={3}>
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ p: 3, borderRadius: '12px', textAlign: 'center' }}>
-                                        <CardContent>
-                                            <Typography variant="h2" sx={{ color: '#4f46e5', mb: 2 }}>
-                                                {draftArticles.length}
-                                            </Typography>
-                                            <Typography variant="h6" sx={{ color: '#6b7280', mb: 1 }}>
-                                                Draft Articles
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Articles you're currently working on
-                                            </Typography>
-                                        </CardContent>
+                                <Grid item xs={12} md={6}>
+                                    <Card
+                                        elevation={0}
+                                        sx={{
+                                            borderRadius: '16px',
+                                            background: 'white',
+                                            border: `1px solid ${alpha(THEME.accent, 0.2)}`,
+                                            p: 3
+                                        }}
+                                    >
+                                        <Typography variant="h6" sx={{ fontWeight: 700, color: THEME.text.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <LightbulbIcon sx={{ color: THEME.accent }} />
+                                            Today's Writing Prompt
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ color: THEME.text.secondary, mb: 3, fontStyle: 'italic' }}>
+                                            "Write about a moment that changed your perspective on creativity."
+                                        </Typography>
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<CreateIcon />}
+                                            onClick={() => setActiveNav('create')}
+                                            sx={{
+                                                borderColor: THEME.accent,
+                                                color: THEME.text.primary,
+                                                '&:hover': {
+                                                    borderColor: THEME.accentDark,
+                                                    bgcolor: alpha(THEME.accent, 0.1)
+                                                }
+                                            }}
+                                        >
+                                            Start Writing
+                                        </Button>
                                     </Card>
                                 </Grid>
-                                
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ p: 3, borderRadius: '12px', textAlign: 'center' }}>
-                                        <CardContent>
-                                            <Typography variant="h2" sx={{ color: '#16a34a', mb: 2 }}>
-                                                {submittedArticles.length}
-                                            </Typography>
-                                            <Typography variant="h6" sx={{ color: '#6b7280', mb: 1 }}>
-                                                Submitted Articles
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Articles under review
-                                            </Typography>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <Card sx={{ p: 3, borderRadius: '12px', textAlign: 'center' }}>
-                                        <CardContent>
-                                            <Typography variant="h2" sx={{ color: '#ea580c', mb: 2 }}>
-                                                {revisedArticles.length}
-                                            </Typography>
-                                            <Typography variant="h6" sx={{ color: '#6b7280', mb: 1 }}>
-                                                Need Revision
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Articles requiring changes
-                                            </Typography>
-                                        </CardContent>
-                                    </Card>
-                            </Grid>
-                            
-                            <Grid container spacing={3} sx={{ mt: 4 }}>
-                                <Grid item xs={12}>
-                                    <Card sx={{ p: 4, borderRadius: '12px' }}>
-                                        <CardContent>
-                                            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: '#111827' }}>
-                                                Recent Activity
-                                            </Typography>
-                                            
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                        Total Articles Created
-                                                    </Typography>
-                                                    <Typography variant="h4" sx={{ color: '#4f46e5' }}>
-                                                        {articles.length}
-                                                    </Typography>
+
+                                <Grid item xs={12} md={6}>
+                                    <Card
+                                        elevation={0}
+                                        sx={{
+                                            borderRadius: '16px',
+                                            background: 'white',
+                                            border: `1px solid ${alpha(THEME.secondary, 0.2)}`,
+                                            p: 3
+                                        }}
+                                    >
+                                        <Typography variant="h6" sx={{ fontWeight: 700, color: THEME.text.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <TimelineIcon sx={{ color: THEME.secondary }} />
+                                            Your Writing Journey
+                                        </Typography>
+                                        <Stack spacing={2}>
+                                            <Box>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                                    <Typography variant="body2" sx={{ color: THEME.text.secondary }}>Articles Written</Typography>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, color: THEME.secondary }}>{articles.length}</Typography>
                                                 </Box>
-                                                
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: '#f0f4ff', borderRadius: '8px' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                        Articles Published
-                                                    </Typography>
-                                                    <Typography variant="h4" sx={{ color: '#16a34a' }}>
-                                                        {articles.filter(a => a.status.name === 'published').length}
-                                                    </Typography>
-                                                </Box>
+                                                <LinearProgress
+                                                    variant="determinate"
+                                                    value={(articles.length / 20) * 100}
+                                                    sx={{
+                                                        height: 6,
+                                                        borderRadius: 3,
+                                                        bgcolor: alpha(THEME.secondary, 0.1),
+                                                        '& .MuiLinearProgress-bar': {
+                                                            background: THEME.gradient.secondary,
+                                                            borderRadius: 3
+                                                        }
+                                                    }}
+                                                />
                                             </Box>
-                                        </CardContent>
+                                            <Box>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                                    <Typography variant="body2" sx={{ color: THEME.text.secondary }}>Publication Rate</Typography>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, color: THEME.success }}>
+                                                        {articles.length ? Math.round((publishedArticles.length / articles.length) * 100) : 0}%
+                                                    </Typography>
+                                                </Box>
+                                                <LinearProgress
+                                                    variant="determinate"
+                                                    value={articles.length ? (publishedArticles.length / articles.length) * 100 : 0}
+                                                    sx={{
+                                                        height: 6,
+                                                        borderRadius: 3,
+                                                        bgcolor: alpha(THEME.success, 0.1),
+                                                        '& .MuiLinearProgress-bar': {
+                                                            background: THEME.gradient.primary,
+                                                            borderRadius: 3
+                                                        }
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Stack>
                                     </Card>
                                 </Grid>
                             </Grid>
-                            </Grid>
-                        </Container>
+                        </Box>
                     </Fade>
                 );
-                
 
             case 'create':
                 return (
-                    <Fade in={activeNav === 'create'}>
-                        <Paper
-                            sx={{
-                                p: 4,
-                                borderRadius: '16px',
-                                background: THEME.surface,
-                                boxShadow: '0 10px 40px rgba(31, 41, 55, 0.1)',
-                                border: '1px solid rgba(255, 255, 255, 0.8)',
-                                backdropFilter: 'blur(10px)',
-                            }}
-                        >
-                            <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
-                                Create New Article
-                            </Typography>
-                            <Typography variant="body2" sx={{ mb: 4, color: '#6b7280' }}>
-                                Share your thoughts with the world
-                            </Typography>
-                            <Box component="form" onSubmit={handleSubmit}>
-                                <TextField
-                                    label="Article Title"
-                                    fullWidth
-                                    placeholder="Enter a compelling title..."
-                                    value={form.title}
-                                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                    sx={{
-                                        mb: 3,
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: '10px',
-                                            backgroundColor: '#f9fafb',
-                                            '&:hover fieldset': { borderColor: THEME.primary },
-                                            '&.Mui-focused fieldset': { borderColor: THEME.primary },
-                                        },
-                                    }}
-                                    required
-                                    variant="outlined"
-                                />
-
-                                <Select
-                                    fullWidth
-                                    value={form.category_id}
-                                    onChange={(e) => setForm({ ...form, category_id: e.target.value ? Number(e.target.value) : '' })}
-                                    displayEmpty
-                                    renderValue={(selected) => {
-                                        if (!selected) {
-                                            return <Typography sx={{ color: '#9ca3af' }}>Select a category</Typography>;
-                                        }
-                                        const category = categories.find(cat => cat.id === selected);
-                                        return category ? category.name : '';
-                                    }}
-                                    sx={{
-                                        mb: 4,
-                                        borderRadius: '10px',
-                                        backgroundColor: '#f9fafb',
-                                        '& .MuiOutlinedInput-root': {
-                                            '&:hover fieldset': { borderColor: THEME.primary },
-                                            '&.Mui-focused fieldset': { borderColor: THEME.primary },
-                                        },
-                                    }}
-                                >
-                                    <MenuItem value="">
-                                        <Typography sx={{ color: '#9ca3af' }}>Select a category</Typography>
-                                    </MenuItem>
-                                    {categories.map((cat) => (
-                                        <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-                                    ))}
-                                </Select>
-
-                                <Typography sx={{ mb: 2, fontWeight: 700, color: '#111827', fontSize: '0.95rem' }}>
-                                    Article Content
-                                </Typography>
-                                <Paper
-                                    sx={{
-                                        mb: 4,
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden',
-                                        backgroundColor: '#fafbfc',
-                                    }}
-                                >
-                                    <JoditEditor
-                                        value={form.content}
-                                        onBlur={(newContent) => setForm({ ...form, content: newContent })}
-                                    />
-                                </Paper>
-
-                                <Box sx={{ display: 'flex', gap: 3 }}>
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        size="large"
-                                        sx={{
-                                            background: `linear-gradient(135deg, ${THEME.primary} 0%, #614ce1 100%)`,
-                                            fontWeight: 700,
-                                            textTransform: 'none',
-                                            borderRadius: '10px',
-                                            py: 1.5,
-                                            fontSize: '1rem',
-                                            boxShadow: `0 4px 15px rgba(79, 70, 229, 0.3)`,
-                                            '&:hover': {
-                                                boxShadow: `0 6px 25px rgba(79, 70, 229, 0.4)`,
-                                            },
-                                        }}
-                                    >
-                                        Save as Draft
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="contained"
-                                        size="large"
-                                        onClick={(e) => {
-                                            Inertia.post(route('writer.articles.store'), { ...form, submit: true });
-                                        }}
-                                        sx={{
-                                            background: THEME.success,
-                                            fontWeight: 700,
-                                            textTransform: 'none',
-                                            borderRadius: '10px',
-                                            py: 1.5,
-                                            fontSize: '1rem',
-                                            boxShadow: `0 4px 15px rgba(22, 163, 74, 0.3)`,
-                                            '&:hover': {
-                                                boxShadow: `0 6px 25px rgba(22, 163, 74, 0.4)`,
-                                            },
-                                        }}
-                                    >
-                                        Save & Submit for Review
-                                    </Button>
+                    <Fade in={activeNav === 'create'} timeout={500}>
+                        <Box>
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 4,
+                                    borderRadius: '16px',
+                                    background: 'white',
+                                    border: `1px solid ${alpha(THEME.primary, 0.1)}`
+                                }}
+                            >
+                                <Box sx={{ mb: 4 }}>
+                                    <Typography variant="h4" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
+                                        Create New Story
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ color: THEME.text.secondary, mb: 3 }}>
+                                        Let your creativity flow. Start writing your next masterpiece.
+                                    </Typography>
+                                    
+                                    {/* Writing Progress */}
+                                    {writingProgress > 0 && (
+                                        <Box sx={{ mb: 3 }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                                <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                                    Writing Progress
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ fontWeight: 600, color: THEME.primary }}>
+                                                    {Math.round(writingProgress)}%
+                                                </Typography>
+                                            </Box>
+                                            <LinearProgress
+                                                variant="determinate"
+                                                value={writingProgress}
+                                                sx={{
+                                                    height: 6,
+                                                    borderRadius: 3,
+                                                    bgcolor: alpha(THEME.primary, 0.1),
+                                                    '& .MuiLinearProgress-bar': {
+                                                        background: THEME.gradient.primary,
+                                                        borderRadius: 3
+                                                    }
+                                                }}
+                                            />
+                                        </Box>
+                                    )}
                                 </Box>
-                            </Box>
-                        </Paper>
+
+                                <Box component="form" onSubmit={handleSubmit}>
+                                    <TextField
+                                        label="Article Title"
+                                        fullWidth
+                                        placeholder="Enter a compelling title that captures attention..."
+                                        value={form.title}
+                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                        sx={{
+                                            mb: 3,
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                                backgroundColor: alpha(THEME.background.main, 0.5),
+                                                '&:hover fieldset': { borderColor: THEME.primary },
+                                                '&.Mui-focused fieldset': { borderColor: THEME.primary },
+                                            },
+                                        }}
+                                        required
+                                        variant="outlined"
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <EditIcon sx={{ color: THEME.primary }} />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+
+                                    <Select
+                                        fullWidth
+                                        value={form.category_id}
+                                        onChange={(e) => setForm({ ...form, category_id: e.target.value ? Number(e.target.value) : '' })}
+                                        displayEmpty
+                                        renderValue={(selected) => {
+                                            if (!selected) {
+                                                return <Typography sx={{ color: THEME.text.light }}>Choose a category for your story</Typography>;
+                                            }
+                                            const category = categories.find(cat => cat.id === selected);
+                                            return category ? category.name : '';
+                                        }}
+                                        sx={{
+                                            mb: 4,
+                                            borderRadius: '12px',
+                                            backgroundColor: alpha(THEME.background.main, 0.5),
+                                            '& .MuiOutlinedInput-root': {
+                                                '&:hover fieldset': { borderColor: THEME.primary },
+                                                '&.Mui-focused fieldset': { borderColor: THEME.primary },
+                                            },
+                                        }}
+                                    >
+                                        <MenuItem value="">
+                                            <Typography sx={{ color: THEME.text.light }}>Select a category</Typography>
+                                        </MenuItem>
+                                        {categories.map((cat) => (
+                                            <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                                        ))}
+                                    </Select>
+
+                                    <Typography sx={{ mb: 2, fontWeight: 700, color: THEME.text.primary, fontSize: '0.95rem' }}>
+                                        Your Story
+                                    </Typography>
+                                    
+                                    <Paper
+                                        sx={{
+                                            mb: 4,
+                                            border: `1px solid ${alpha(THEME.primary, 0.1)}`,
+                                            borderRadius: '12px',
+                                            overflow: 'hidden',
+                                            backgroundColor: alpha(THEME.background.main, 0.5),
+                                        }}
+                                    >
+                                        <JoditEditor
+                                            value={form.content}
+                                            onBlur={(newContent) => setForm({ ...form, content: newContent })}
+                                            config={{
+                                                buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'font', 'fontsize', '|', 'image', 'table', 'link', '|', 'align', '|', 'undo', 'redo'],
+                                                theme: 'dark',
+                                                showCharsCounter: true,
+                                                showWordsCounter: true,
+                                                showXPathInStatusbar: false,
+                                                uploader: {
+                                                    url: route('writer.upload.image'),
+                                                    format: 'json',
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                                                    },
+                                                    prepareData: function (formdata) {
+                                                        // Jodit will automatically add the file as 'upload'
+                                                        return formdata;
+                                                    },
+                                                    isSuccess: function (resp) {
+                                                        return resp.uploaded === 1;
+                                                    },
+                                                    getMessage: function (resp) {
+                                                        return resp.msg || 'Upload failed';
+                                                    },
+                                                    process: function (resp) {
+                                                        return {
+                                                            files: [resp.url],
+                                                            path: resp.url,
+                                                            baseurl: '',
+                                                            newfilename: resp.fileName
+                                                        };
+                                                    },
+                                                    error: function (e) {
+                                                        console.error('Image upload error:', e);
+                                                        alert('Image upload failed. Please try again.');
+                                                    }
+                                                },
+                                                image: {
+                                                    openOnDblClick: true,
+                                                    editSrc: true,
+                                                    useImageEditor: false,
+                                                    editButtons: ['imageRemove']
+                                                }
+                                            }}
+                                        />
+                                    </Paper>
+
+                                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            size="large"
+                                            startIcon={<SaveIcon />}
+                                            sx={{
+                                                background: THEME.gradient.secondary,
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                textTransform: 'none',
+                                                borderRadius: '10px',
+                                                py: 1.5,
+                                                px: 4,
+                                                '&:hover': {
+                                                    boxShadow: `0 8px 16px ${alpha(THEME.secondary, 0.3)}`
+                                                }
+                                            }}
+                                        >
+                                            Save as Draft
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="contained"
+                                            size="large"
+                                            startIcon={<RocketLaunchIcon />}
+                                            onClick={(e) => {
+                                                Inertia.post(route('writer.articles.store'), { ...form, submit: true });
+                                            }}
+                                            sx={{
+                                                background: THEME.gradient.primary,
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                textTransform: 'none',
+                                                borderRadius: '10px',
+                                                py: 1.5,
+                                                px: 4,
+                                                '&:hover': {
+                                                    boxShadow: `0 8px 16px ${alpha(THEME.primary, 0.3)}`
+                                                }
+                                            }}
+                                        >
+                                            Submit for Review
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </Box>
                     </Fade>
                 );
 
             case 'drafts':
                 return (
-                    <Fade in={activeNav === 'drafts'}>
+                    <Fade in={activeNav === 'drafts'} timeout={500}>
                         <Box>
                             <Box sx={{ mb: 4 }}>
-                                <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
+                                <Typography variant="h4" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
                                     My Drafts
                                 </Typography>
-                                <Typography variant="body2" sx={{ mb: 3, color: '#6b7280' }}>
-                                    You have {draftArticles.length} draft{draftArticles.length !== 1 ? 's' : ''}
+                                <Typography variant="body1" sx={{ color: THEME.text.secondary, mb: 3 }}>
+                                    You have {draftArticles.length} work{draftArticles.length !== 1 ? 's' : ''} in progress
                                 </Typography>
+                                
                                 <TextField
                                     fullWidth
-                                    placeholder="Search by title or category..."
+                                    placeholder="Search your drafts by title or category..."
                                     value={categorySearch}
                                     onChange={(e) => setCategorySearch(e.target.value)}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
-                                                <SearchIcon sx={{ color: '#9ca3af' }} />
+                                                <SearchIcon sx={{ color: THEME.text.light }} />
                                             </InputAdornment>
                                         ),
                                     }}
                                     sx={{
                                         mb: 3,
                                         '& .MuiOutlinedInput-root': {
-                                            borderRadius: '10px',
-                                            backgroundColor: '#f9fafb',
+                                            borderRadius: '12px',
+                                            backgroundColor: 'white',
                                             '&:hover fieldset': { borderColor: THEME.primary },
                                             '&.Mui-focused fieldset': { borderColor: THEME.primary },
                                         },
@@ -359,159 +865,173 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                     variant="outlined"
                                 />
                             </Box>
+
                             {filteredDraftArticles.length === 0 ? (
-                                <Card sx={{ borderRadius: '12px' }}>
-                                    <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                                        <Typography color="textSecondary">
-                                            {categorySearch ? ' No drafts found matching your search.' : ' No drafts yet. Start creating!'}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                <Grid
-                                    container
-                                    spacing={3}
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        p: 6,
+                                        borderRadius: '16px',
+                                        background: 'white',
+                                        textAlign: 'center',
+                                        border: `1px solid ${alpha(THEME.primary, 0.1)}`
+                                    }}
                                 >
-                                    {filteredDraftArticles.map((article) => (
-                                        <Grid
-                                            key={article.id}
-                                            item
-                                            xs={12}
-                                            md={4}   // ALWAYS 3 per row on md+
+                                    <CreateIcon sx={{ fontSize: 60, color: THEME.text.light, mb: 2 }} />
+                                    <Typography variant="h6" sx={{ color: THEME.text.primary, mb: 1 }}>
+                                        {categorySearch ? 'No drafts found' : 'Start Your First Draft'}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: THEME.text.secondary, mb: 3 }}>
+                                        {categorySearch ? 'Try a different search term' : 'Begin writing your first article'}
+                                    </Typography>
+                                    {!categorySearch && (
+                                        <Button
+                                            variant="contained"
+                                            startIcon={<AddIcon />}
+                                            onClick={() => setActiveNav('create')}
                                             sx={{
-                                                display: 'flex',
+                                                background: THEME.gradient.primary,
+                                                color: 'white',
+                                                '&:hover': {
+                                                    boxShadow: `0 8px 16px ${alpha(THEME.primary, 0.3)}`
+                                                }
                                             }}
                                         >
-                                            <Card
-                                                sx={{
-                                                    flex: 1,
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    borderRadius: '14px',
-                                                    border: '1px solid #e2e8f0',
-                                                    minHeight: 340, // FORCE equal height
-                                                    transition: 'all 0.25s ease',
-                                                    '&:hover': {
-                                                        transform: 'translateY(-6px)',
-                                                        boxShadow: '0 12px 30px rgba(79, 70, 229, 0.15)',
-                                                    },
-                                                }}
-                                            >
-                                                {/* TOP CONTENT */}
-                                                <CardContent
+                                            Create New Article
+                                        </Button>
+                                    )}
+                                </Paper>
+                            ) : (
+                                <Grid container spacing={3}>
+                                    {filteredDraftArticles.map((article, index) => (
+                                        <Grid key={article.id} item xs={12} md={6} lg={4}>
+                                            <Zoom in timeout={300 + index * 100}>
+                                                <Card
+                                                    elevation={0}
                                                     sx={{
-                                                        flexGrow: 1,
+                                                        height: '100%',
                                                         display: 'flex',
                                                         flexDirection: 'column',
-                                                        p: 3,
+                                                        borderRadius: '16px',
+                                                        background: STATUS_COLORS.draft.gradient,
+                                                        border: `1px solid ${alpha(THEME.primary, 0.1)}`,
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            transform: 'translateY(-4px)',
+                                                            boxShadow: `0 12px 24px ${alpha(THEME.primary, 0.15)}`,
+                                                            borderColor: THEME.primary
+                                                        }
                                                     }}
                                                 >
-                                                    {/* TITLE (fixed height block) */}
-                                                    <Typography
-                                                        variant="h6"
-                                                        sx={{
-                                                            fontWeight: 700,
-                                                            fontSize: '1.05rem',
-                                                            lineHeight: 1.4,
-                                                            minHeight: 56, // SAME height for all titles
-                                                            display: '-webkit-box',
-                                                            WebkitLineClamp: 2,
-                                                            WebkitBoxOrient: 'vertical',
-                                                            overflow: 'hidden',
-                                                            mb: 2,
-                                                        }}
-                                                    >
-                                                        {article.title}
-                                                    </Typography>
+                                                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                                            <Chip
+                                                                icon={<CreateIcon />}
+                                                                label="Draft"
+                                                                size="small"
+                                                                sx={{
+                                                                    bgcolor: alpha(THEME.primary, 0.1),
+                                                                    color: THEME.primary,
+                                                                    fontWeight: 600
+                                                                }}
+                                                            />
+                                                            <Typography variant="caption" sx={{ color: THEME.text.light }}>
+                                                                {getReadTime(article.content)}
+                                                            </Typography>
+                                                        </Box>
 
-                                                    {/* CATEGORY */}
-                                                    <Chip
-                                                        label={article.category.name}
-                                                        size="small"
-                                                        sx={{
-                                                            alignSelf: 'flex-start',
-                                                            mb: 2,
-                                                            backgroundColor: '#f0f4ff',
-                                                            color: '#4f46e5',
-                                                            fontWeight: 600,
-                                                            fontSize: '0.75rem',
-                                                        }}
-                                                    />
+                                                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: THEME.text.primary }}>
+                                                            {article.title}
+                                                        </Typography>
 
-                                                    {/* DATE */}
-                                                    <Typography
-                                                        variant="caption"
-                                                        sx={{ color: '#6b7280', mb: 2 }}
-                                                    >
-                                                        Last edited:{" "}
-                                                        {new Date(article.updated_at).toLocaleDateString()}
-                                                    </Typography>
-
-                                                    {/* PUSH STATUS TO BOTTOM */}
-                                                    <Box sx={{ mt: 'auto' }}>
                                                         <Chip
-                                                            label="Draft"
+                                                            label={article.category.name}
+                                                            size="small"
                                                             sx={{
-                                                                width: '100%',
-                                                                background: STATUS_COLORS.draft.bg,
-                                                                color: STATUS_COLORS.draft.text,
-                                                                fontWeight: 600,
-                                                                justifyContent: 'center',
+                                                                mb: 2,
+                                                                bgcolor: alpha(THEME.secondary, 0.1),
+                                                                color: THEME.secondary
                                                             }}
                                                         />
-                                                    </Box>
-                                                </CardContent>
 
-                                                {/* ACTION BUTTONS */}
-                                                <CardActions
-                                                    sx={{
-                                                        flexDirection: 'column',
-                                                        gap: 1,
-                                                        px: 2,
-                                                        pb: 2,
-                                                    }}
-                                                >
-                                                    <Button
-                                                        fullWidth
-                                                        size="small"
-                                                        startIcon={<VisibilityIcon />}
-                                                        sx={{ justifyContent: 'flex-start' }}
-                                                        onClick={() =>
-                                                            (window.location.href = route(
-                                                                'writer.articles.show',
-                                                                article.id
-                                                            ))
-                                                        }
-                                                    >
-                                                        View
-                                                    </Button>
+                                                        <Box sx={{ mt: 2 }}>
+                                                            <Typography variant="caption" sx={{ color: THEME.text.light, display: 'block', mb: 0.5 }}>
+                                                                Last edited
+                                                            </Typography>
+                                                            <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                                                {new Date(article.updated_at).toLocaleDateString()} at {new Date(article.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </Typography>
+                                                        </Box>
 
-                                                    <Button
-                                                        fullWidth
-                                                        size="small"
-                                                        startIcon={<EditIcon />}
-                                                        sx={{ justifyContent: 'flex-start' }}
-                                                        onClick={() =>
-                                                            (window.location.href = route(
-                                                                'writer.articles.show',
-                                                                article.id
-                                                            ))
-                                                        }
-                                                    >
-                                                        Edit
-                                                    </Button>
+                                                        {/* Writing Progress for this draft */}
+                                                        {article.content && (
+                                                            <Box sx={{ mt: 2 }}>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                                                    <Typography variant="caption" sx={{ color: THEME.text.light }}>
+                                                                        Progress
+                                                                    </Typography>
+                                                                    <Typography variant="caption" sx={{ color: THEME.primary }}>
+                                                                        {Math.min(Math.round((getWordCount(article.content) / 500) * 100), 100)}%
+                                                                    </Typography>
+                                                                </Box>
+                                                                <LinearProgress
+                                                                    variant="determinate"
+                                                                    value={Math.min((getWordCount(article.content) / 500) * 100, 100)}
+                                                                    sx={{
+                                                                        height: 4,
+                                                                        borderRadius: 2,
+                                                                        bgcolor: alpha(THEME.primary, 0.1),
+                                                                        '& .MuiLinearProgress-bar': {
+                                                                            background: THEME.gradient.primary,
+                                                                            borderRadius: 2
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </Box>
+                                                        )}
+                                                    </CardContent>
 
-                                                    <Button
-                                                        fullWidth
-                                                        size="small"
-                                                        startIcon={<SendIcon />}
-                                                        onClick={() => handleSubmitArticle(article.id)}
-                                                        sx={{ justifyContent: 'flex-start', fontWeight: 600 }}
-                                                    >
-                                                        Submit
-                                                    </Button>
-                                                </CardActions>
-                                            </Card>
+                                                    <CardActions sx={{ p: 3, pt: 0, gap: 1 }}>
+                                                        <Tooltip title="Continue Writing">
+                                                            <Button
+                                                                fullWidth
+                                                                size="small"
+                                                                variant="outlined"
+                                                                startIcon={<EditIcon />}
+                                                                onClick={() => window.location.href = route('writer.articles.show', article.id)}
+                                                                sx={{
+                                                                    borderColor: alpha(THEME.primary, 0.3),
+                                                                    color: THEME.text.primary,
+                                                                    '&:hover': {
+                                                                        borderColor: THEME.primary,
+                                                                        bgcolor: alpha(THEME.primary, 0.04)
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Edit
+                                                            </Button>
+                                                        </Tooltip>
+                                                        <Tooltip title="Submit for Review">
+                                                            <Button
+                                                                fullWidth
+                                                                size="small"
+                                                                variant="contained"
+                                                                startIcon={<SendIcon />}
+                                                                onClick={() => handleSubmitArticle(article.id)}
+                                                                sx={{
+                                                                    background: THEME.gradient.secondary,
+                                                                    color: 'white',
+                                                                    '&:hover': {
+                                                                        boxShadow: `0 4px 12px ${alpha(THEME.secondary, 0.3)}`
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Submit
+                                                            </Button>
+                                                        </Tooltip>
+                                                    </CardActions>
+                                                </Card>
+                                            </Zoom>
                                         </Grid>
                                     ))}
                                 </Grid>
@@ -522,79 +1042,314 @@ export default function Dashboard({ articles, categories, auth, notifications })
 
             case 'submitted':
                 return (
-                    <Fade in={activeNav === 'submitted'}>
+                    <Fade in={activeNav === 'submitted'} timeout={500}>
                         <Box>
                             <Box sx={{ mb: 4 }}>
-                                <Typography variant="h5" sx={{ mb: 1, fontWeight: 800, color: '#111827', letterSpacing: '-0.5px' }}>
+                                <Typography variant="h4" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
                                     Submitted Articles
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>
-                                    {submittedArticles.length} under review, {revisedArticles.length} awaiting revision
+                                <Typography variant="body1" sx={{ color: THEME.text.secondary }}>
+                                    {submittedArticles.length} under review, {revisedArticles.length} awaiting your revisions
                                 </Typography>
                             </Box>
+
                             {submittedArticles.length === 0 && revisedArticles.length === 0 ? (
-                                <Card sx={{ borderRadius: '12px' }}>
-                                    <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                                        <Typography color="textSecondary">
-                                            📤 No submitted articles yet.
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        p: 6,
+                                        borderRadius: '16px',
+                                        background: 'white',
+                                        textAlign: 'center',
+                                        border: `1px solid ${alpha(THEME.secondary, 0.1)}`
+                                    }}
+                                >
+                                    <SendIcon sx={{ fontSize: 60, color: THEME.text.light, mb: 2 }} />
+                                    <Typography variant="h6" sx={{ color: THEME.text.primary, mb: 1 }}>
+                                        No Submitted Articles
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                        When you submit articles for review, they'll appear here
+                                    </Typography>
+                                </Paper>
                             ) : (
                                 <Grid container spacing={3}>
-                                    {[...submittedArticles, ...revisedArticles].map((article) => (
+                                    {/* Articles Under Review */}
+                                    {submittedArticles.map((article, index) => (
                                         <Grid key={article.id} item xs={12}>
-                                            <Card
-                                                sx={{
-                                                    borderRadius: '12px',
-                                                    border: '1px solid #e2e8f0',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        transform: 'translateX(4px)',
-                                                        boxShadow: '0 8px 20px rgba(102, 126, 234, 0.1)',
-                                                    },
-                                                }}
-                                            >
-                                                <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                                                    <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                                            <Zoom in timeout={300 + index * 100}>
+                                                <Card
+                                                    elevation={0}
+                                                    sx={{
+                                                        borderRadius: '16px',
+                                                        background: 'white',
+                                                        border: `1px solid ${alpha(THEME.secondary, 0.2)}`,
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            transform: 'translateX(4px)',
+                                                            boxShadow: `0 8px 16px ${alpha(THEME.secondary, 0.15)}`,
+                                                            borderColor: THEME.secondary
+                                                        }
+                                                    }}
+                                                >
+                                                    <CardContent sx={{ p: 3 }}>
+                                                        <Grid container spacing={2} alignItems="center">
+                                                            <Grid item xs={12} md={8}>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                                                    <Chip
+                                                                        icon={<SendIcon />}
+                                                                        label="Under Review"
+                                                                        size="small"
+                                                                        sx={{
+                                                                            bgcolor: alpha(THEME.secondary, 0.1),
+                                                                            color: THEME.secondary,
+                                                                            fontWeight: 600
+                                                                        }}
+                                                                    />
+                                                                    <Chip
+                                                                        label={article.category.name}
+                                                                        size="small"
+                                                                        sx={{ bgcolor: alpha(THEME.primary, 0.1), color: THEME.primary }}
+                                                                    />
+                                                                </Box>
+                                                                
+                                                                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: THEME.text.primary }}>
+                                                                    {article.title}
+                                                                </Typography>
+                                                                
+                                                                <Typography variant="body2" sx={{ color: THEME.text.secondary, mb: 1 }}>
+                                                                    Submitted on {new Date(article.created_at).toLocaleDateString()}
+                                                                </Typography>
+                                                            </Grid>
+                                                            
+                                                            <Grid item xs={12} md={4}>
+                                                                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                                                    <Tooltip title="View Article">
+                                                                        <Button
+                                                                            variant="outlined"
+                                                                            startIcon={<VisibilityIcon />}
+                                                                            onClick={() => window.location.href = route('writer.articles.show', article.id)}
+                                                                            sx={{
+                                                                                borderColor: alpha(THEME.secondary, 0.3),
+                                                                                color: THEME.text.primary
+                                                                            }}
+                                                                        >
+                                                                            View
+                                                                        </Button>
+                                                                    </Tooltip>
+                                                                </Box>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </CardContent>
+                                                </Card>
+                                            </Zoom>
+                                        </Grid>
+                                    ))}
+
+                                    {/* Articles Needing Revision */}
+                                    {revisedArticles.map((article, index) => (
+                                        <Grid key={article.id} item xs={12}>
+                                            <Zoom in timeout={300 + index * 100}>
+                                                <Card
+                                                    elevation={0}
+                                                    sx={{
+                                                        borderRadius: '16px',
+                                                        background: 'white',
+                                                        border: `1px solid ${alpha(THEME.warning, 0.2)}`,
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            transform: 'translateX(4px)',
+                                                            boxShadow: `0 8px 16px ${alpha(THEME.warning, 0.15)}`,
+                                                            borderColor: THEME.warning
+                                                        }
+                                                    }}
+                                                >
+                                                    <CardContent sx={{ p: 3 }}>
+                                                        <Grid container spacing={2} alignItems="center">
+                                                            <Grid item xs={12} md={8}>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                                                    <Chip
+                                                                        icon={<BrushIcon />}
+                                                                        label="Needs Revision"
+                                                                        size="small"
+                                                                        sx={{
+                                                                            bgcolor: alpha(THEME.warning, 0.1),
+                                                                            color: THEME.warning,
+                                                                            fontWeight: 600
+                                                                        }}
+                                                                    />
+                                                                    <Chip
+                                                                        label={article.category.name}
+                                                                        size="small"
+                                                                        sx={{ bgcolor: alpha(THEME.primary, 0.1), color: THEME.primary }}
+                                                                    />
+                                                                </Box>
+                                                                
+                                                                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: THEME.text.primary }}>
+                                                                    {article.title}
+                                                                </Typography>
+                                                                
+                                                                {article.latest_feedback && (
+                                                                    <Paper
+                                                                        sx={{
+                                                                            p: 2,
+                                                                            mt: 2,
+                                                                            bgcolor: alpha(THEME.warning, 0.05),
+                                                                            borderRadius: '8px',
+                                                                            border: `1px solid ${alpha(THEME.warning, 0.1)}`
+                                                                        }}
+                                                                    >
+                                                                        <Typography variant="caption" sx={{ color: THEME.warning, fontWeight: 600, display: 'block', mb: 0.5 }}>
+                                                                            Editor's Feedback:
+                                                                        </Typography>
+                                                                        <Typography variant="body2" sx={{ color: THEME.text.secondary, fontStyle: 'italic' }}>
+                                                                            "{article.latest_feedback.comments}"
+                                                                        </Typography>
+                                                                    </Paper>
+                                                                )}
+                                                            </Grid>
+                                                            
+                                                            <Grid item xs={12} md={4}>
+                                                                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                                                    <Tooltip title="Revise Article">
+                                                                        <Button
+                                                                            variant="contained"
+                                                                            startIcon={<EditIcon />}
+                                                                            onClick={() => window.location.href = route('writer.articles.revise.page', article.id)}
+                                                                            sx={{
+                                                                                background: THEME.gradient.warning,
+                                                                                color: 'white',
+                                                                                '&:hover': {
+                                                                                    boxShadow: `0 4px 12px ${alpha(THEME.warning, 0.3)}`
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            Revise Now
+                                                                        </Button>
+                                                                    </Tooltip>
+                                                                </Box>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </CardContent>
+                                                </Card>
+                                            </Zoom>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            )}
+                        </Box>
+                    </Fade>
+                );
+
+            case 'published':
+                return (
+                    <Fade in={activeNav === 'published'} timeout={500}>
+                        <Box>
+                            <Box sx={{ mb: 4 }}>
+                                <Typography variant="h4" sx={{ fontWeight: 800, color: THEME.text.primary, mb: 1 }}>
+                                    Published Articles
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: THEME.text.secondary }}>
+                                    {publishedArticles.length} article{publishedArticles.length !== 1 ? 's' : ''} published and available for readers
+                                </Typography>
+                            </Box>
+
+                            {publishedArticles.length === 0 ? (
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        p: 6,
+                                        borderRadius: '16px',
+                                        background: 'white',
+                                        textAlign: 'center',
+                                        border: `1px solid ${alpha(THEME.success, 0.1)}`
+                                    }}
+                                >
+                                    <RocketLaunchIcon sx={{ fontSize: 60, color: THEME.text.light, mb: 2 }} />
+                                    <Typography variant="h6" sx={{ color: THEME.text.primary, mb: 1 }}>
+                                        No Published Articles Yet
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: THEME.text.secondary }}>
+                                        Keep writing! Your published works will appear here
+                                    </Typography>
+                                </Paper>
+                            ) : (
+                                <Grid container spacing={3}>
+                                    {publishedArticles.map((article, index) => (
+                                        <Grid key={article.id} item xs={12} md={6}>
+                                            <Zoom in timeout={300 + index * 100}>
+                                                <Card
+                                                    elevation={0}
+                                                    sx={{
+                                                        height: '100%',
+                                                        borderRadius: '16px',
+                                                        background: 'white',
+                                                        border: `1px solid ${alpha(THEME.success, 0.2)}`,
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            transform: 'translateY(-4px)',
+                                                            boxShadow: `0 12px 24px ${alpha(THEME.success, 0.15)}`,
+                                                            borderColor: THEME.success
+                                                        }
+                                                    }}
+                                                >
+                                                    <CardContent sx={{ p: 3 }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                                            <Chip
+                                                                icon={<RocketLaunchIcon />}
+                                                                label="Published"
+                                                                size="small"
+                                                                sx={{
+                                                                    bgcolor: alpha(THEME.success, 0.1),
+                                                                    color: THEME.success,
+                                                                    fontWeight: 600
+                                                                }}
+                                                            />
+                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                <Tooltip title="Views">
+                                                                    <Chip
+                                                                        icon={<VisibilityIcon />}
+                                                                        label={article.views || 0}
+                                                                        size="small"
+                                                                        sx={{ bgcolor: alpha(THEME.primary, 0.1), color: THEME.primary }}
+                                                                    />
+                                                                </Tooltip>
+                                                            </Box>
+                                                        </Box>
+
+                                                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: THEME.text.primary }}>
                                                             {article.title}
                                                         </Typography>
-                                                        <Chip label={article.category.name} size="small" sx={{ mb: 2 }} />
-                                                        <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
-                                                            Status: {article.status.label}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Chip
-                                                        label={article.status.label}
-                                                        sx={{
-                                                            background: STATUS_COLORS[article.status.name]?.bg || '#f0f0f0',
-                                                            color: STATUS_COLORS[article.status.name]?.text || '#666',
-                                                            fontWeight: 600,
-                                                        }}
-                                                    />
-                                                </CardContent>
-                                                <CardActions>
-                                                    <Button 
-                                                        size="small" 
-                                                        startIcon={<VisibilityIcon />} 
-                                                        sx={{ color: '#667eea' }}
-                                                        onClick={() => window.location.href = route('writer.articles.show', article.id)}
-                                                    >
-                                                        View
-                                                    </Button>
-                                                    {article.status.name === 'needs_revision' && (
-                                                        <Button 
-                                                            size="small" 
-                                                            startIcon={<EditIcon />} 
-                                                            sx={{ color: '#e65100', fontWeight: 600 }}
-                                                            onClick={() => window.location.href = route('writer.articles.revise.page', article.id)}
-                                                        >
-                                                            Revise
-                                                        </Button>
-                                                    )}
-                                                </CardActions>
-                                            </Card>
+
+                                                        <Chip
+                                                            label={article.category.name}
+                                                            size="small"
+                                                            sx={{
+                                                                mb: 2,
+                                                                bgcolor: alpha(THEME.secondary, 0.1),
+                                                                color: THEME.secondary
+                                                            }}
+                                                        />
+
+                                                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <Typography variant="caption" sx={{ color: THEME.text.light }}>
+                                                                Published on {new Date(article.updated_at).toLocaleDateString()}
+                                                            </Typography>
+                                                            <Button
+                                                                size="small"
+                                                                endIcon={<VisibilityIcon />}
+                                                                onClick={() => window.location.href = route('writer.articles.show', article.id)}
+                                                                sx={{
+                                                                    color: THEME.primary,
+                                                                    fontWeight: 600
+                                                                }}
+                                                            >
+                                                                Read
+                                                            </Button>
+                                                        </Box>
+                                                    </CardContent>
+                                                </Card>
+                                            </Zoom>
                                         </Grid>
                                     ))}
                                 </Grid>
@@ -609,119 +1364,162 @@ export default function Dashboard({ articles, categories, auth, notifications })
     };
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
+        <Box sx={{ 
+            display: 'flex', 
+            minHeight: '100vh',
+            background: THEME.background.gradient
+        }}>
             {/* Header */}
             <AppBar
                 position="fixed"
+                elevation={0}
                 sx={{
-                    background: `linear-gradient(135deg, ${THEME.primary} 0%, #614ce1 100%)`,
-                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.15)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(20px)',
+                    borderBottom: `1px solid ${alpha(THEME.primary, 0.1)}`,
                     zIndex: 1201,
-                    backdropFilter: 'blur(10px)',
+                    height: 80
                 }}
             >
-                <Toolbar>
-                    <Typography variant="h6" sx={{ fontWeight: 800, flexGrow: 1, fontSize: '1.1rem', letterSpacing: '-0.3px' }}>
-                         Writer Dashboard
-                    </Typography>
+                <Toolbar sx={{ minHeight: 80 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+                        <Box
+                            sx={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: '12px',
+                                background: THEME.gradient.primary,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: `0 4px 12px ${alpha(THEME.primary, 0.3)}`
+                            }}
+                        >
+                            <AutoStoriesIcon sx={{ color: 'white', fontSize: 28 }} />
+                        </Box>
+                        <Box>
+                            <Typography variant="h5" sx={{ fontWeight: 800, color: THEME.text.primary, letterSpacing: '-0.5px' }}>
+                                Creative Writing Studio
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: THEME.text.secondary }}>
+                                Where words come to life
+                            </Typography>
+                        </Box>
+                    </Box>
                     
                     {/* Notification Bell */}
-                    <IconButton
-                        onClick={(e) => setNotificationAnchor(e.currentTarget)}
-                        sx={{ 
-                            color: 'white', 
-                            mr: 1,
-                            width: 40,
-                            height: 40,
-                            background: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            border: '2px solid rgba(255,255,255,0.2)',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                                background: 'rgba(255,255,255,0.25)',
-                                transform: 'scale(1.05)',
-                                boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
-                            },
-                            '&:active': {
-                                transform: 'scale(0.95)',
-                            }
-                        }}
-                    >
-                        <Badge 
-                            badgeContent={unreadCount} 
-                            color="error"
-                            sx={{
-                                '& .MuiBadge-badge': {
-                                    fontSize: '0.6rem',
-                                    height: 16,
-                                    minWidth: 16,
+                    <Tooltip title="Notifications">
+                        <IconButton
+                            onClick={(e) => setNotificationAnchor(e.currentTarget)}
+                            sx={{ 
+                                mr: 2,
+                                width: 48,
+                                height: 48,
+                                bgcolor: alpha(THEME.primary, 0.05),
+                                '&:hover': {
+                                    bgcolor: alpha(THEME.primary, 0.1)
                                 }
                             }}
                         >
-                            {unreadCount > 0 ? (
-                                <NotificationsIcon sx={{ fontSize: 20 }} />
-                            ) : (
-                                <NotificationsNoneIcon sx={{ fontSize: 20 }} />
-                            )}
-                        </Badge>
-                    </IconButton>
+                            <Badge 
+                                badgeContent={unreadCount} 
+                                sx={{
+                                    '& .MuiBadge-badge': {
+                                        bgcolor: THEME.primary,
+                                        color: 'white'
+                                    }
+                                }}
+                            >
+                                {unreadCount > 0 ? (
+                                    <NotificationsIcon sx={{ color: THEME.primary }} />
+                                ) : (
+                                    <NotificationsNoneIcon sx={{ color: THEME.text.secondary }} />
+                                )}
+                            </Badge>
+                        </IconButton>
+                    </Tooltip>
                     
-                    <IconButton
-                        onClick={(e) => setProfileAnchor(e.currentTarget)}
-                        sx={{ 
-                            color: 'white', 
-                            ml: 2,
-                            width: 48,
-                            height: 48,
-                            background: 'rgba(255,255,255,0.25)',
-                            backdropFilter: 'blur(10px)',
-                            border: '2px solid rgba(255,255,255,0.3)',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                                background: 'rgba(255,255,255,0.35)',
-                                transform: 'scale(1.05)',
-                                boxShadow: '0 6px 25px rgba(0,0,0,0.25)',
-                            },
-                            '&:active': {
-                                transform: 'scale(0.95)',
-                            }
-                        }}
-                    >
-                        <Avatar sx={{ 
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                            width: 36, 
-                            height: 36,
-                            fontWeight: 'bold',
-                            fontSize: '1rem',
-                            border: '2px solid rgba(255,255,255,0.5)'
-                        }}>
-                            {auth?.user?.name?.charAt(0) || 'U'}
-                        </Avatar>
-                    </IconButton>
+                    {/* Home Button */}
+                    <Tooltip title="Home">
+                        <IconButton
+                            onClick={() => Inertia.visit('/')}
+                            sx={{ 
+                                mr: 2,
+                                width: 48,
+                                height: 48,
+                                bgcolor: alpha(THEME.primary, 0.05),
+                                '&:hover': {
+                                    bgcolor: alpha(THEME.primary, 0.1)
+                                }
+                            }}
+                        >
+                            <HomeIcon sx={{ color: THEME.primary }} />
+                        </IconButton>
+                    </Tooltip>
+                    
+                    {/* Profile Button */}
+                    <Tooltip title="Profile">
+                        <IconButton
+                            onClick={(e) => setProfileAnchor(e.currentTarget)}
+                            sx={{ 
+                                width: 48,
+                                height: 48,
+                                background: THEME.gradient.primary,
+                                '&:hover': {
+                                    boxShadow: `0 8px 16px ${alpha(THEME.primary, 0.3)}`
+                                }
+                            }}
+                        >
+                            <Avatar sx={{ 
+                                width: 40, 
+                                height: 40,
+                                bgcolor: 'white',
+                                color: THEME.primary,
+                                fontWeight: 'bold',
+                                fontSize: '1.2rem'
+                            }}>
+                                {auth?.user?.name?.charAt(0) || 'W'}
+                            </Avatar>
+                        </IconButton>
+                    </Tooltip>
+
+                    {/* Profile Menu */}
                     <Menu
                         anchorEl={profileAnchor}
                         open={Boolean(profileAnchor)}
                         onClose={() => setProfileAnchor(null)}
+                        PaperProps={{
+                            sx: {
+                                minWidth: 250,
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                                border: `1px solid ${alpha(THEME.primary, 0.1)}`,
+                                mt: 1
+                            }
+                        }}
                     >
-                        <MenuItem disabled>
-                            <Typography variant="caption" sx={{ fontWeight: 600 }}>{auth?.user?.name}</Typography>
-                        </MenuItem>
+                        <Box sx={{ px: 2, py: 1.5 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: THEME.text.primary }}>
+                                {auth?.user?.name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: THEME.text.secondary }}>
+                                {auth?.user?.email}
+                            </Typography>
+                        </Box>
                         <Divider />
                         <MenuItem onClick={() => {
                             setProfileAnchor(null);
-                            window.location.href = route('profile.edit');
+                            Inertia.get(route('profile.edit'));
                         }}>
-                            <AccountCircleIcon sx={{ mr: 1, fontSize: 18 }} />
-                            Profile
+                            <AccountCircleIcon sx={{ mr: 1.5, fontSize: 20, color: THEME.primary }} />
+                            Profile Settings
                         </MenuItem>
                         <MenuItem onClick={() => {
                             setProfileAnchor(null);
-                            window.location.href = '/sample/logout';
+                            Inertia.post('/logout');
                         }}>
-                            <LogoutIcon sx={{ mr: 1, fontSize: 18, color: '#e65100' }} />
-                            Log Out
+                            <LogoutIcon sx={{ mr: 1.5, fontSize: 20, color: THEME.error }} />
+                            Sign Out
                         </MenuItem>
                         <Divider />
                         <MenuItem
@@ -729,20 +1527,20 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                 setProfileAnchor(null);
                                 window.location.href = '/sample/switch/editor';
                             }}
-                            sx={{ fontSize: '0.85rem', color: '#667eea' }}
+                            sx={{ color: THEME.secondary }}
                         >
-                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16 }} />
-                            Editor
+                            <SwapHorizIcon sx={{ mr: 1.5, fontSize: 20 }} />
+                            Switch to Editor View
                         </MenuItem>
                         <MenuItem
                             onClick={() => {
                                 setProfileAnchor(null);
                                 window.location.href = '/sample/switch/student';
                             }}
-                            sx={{ fontSize: '0.85rem', color: '#667eea' }}
+                            sx={{ color: THEME.secondary }}
                         >
-                            <SwapHorizIcon sx={{ mr: 1, fontSize: 16 }} />
-                            Student
+                            <SwapHorizIcon sx={{ mr: 1.5, fontSize: 20 }} />
+                            Switch to Student View
                         </MenuItem>
                     </Menu>
                     
@@ -756,32 +1554,31 @@ export default function Dashboard({ articles, categories, auth, notifications })
                                 maxHeight: 400,
                                 width: 350,
                                 mt: 1,
+                                borderRadius: '12px',
+                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                                border: `1px solid ${alpha(THEME.primary, 0.1)}`
                             }
                         }}
                     >
-                        <MenuItem disabled>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(THEME.primary, 0.1)}` }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: THEME.text.primary }}>
                                 Notifications from Editors
                             </Typography>
-                        </MenuItem>
-                        <Divider />
+                        </Box>
                         
                         {notifications?.length > 0 && (
                             <MenuItem
-                                onClick={() => {
-                                    // Mark all notifications as read
-                                    const allNotificationIds = notifications.map(n => n.id);
-                                    setReadNotifications(new Set(allNotificationIds));
+                                onClick={async () => {
+                                    await markAllNotificationsAsRead();
                                     setNotificationAnchor(null);
                                 }}
                                 sx={{ 
-                                    py: 1,
-                                    backgroundColor: '#f8fafc',
-                                    borderBottom: '1px solid #e2e8f0',
-                                    '&:hover': { backgroundColor: '#f1f5f9' }
+                                    py: 1.5,
+                                    bgcolor: alpha(THEME.primary, 0.02),
+                                    borderBottom: `1px solid ${alpha(THEME.primary, 0.1)}`
                                 }}
                             >
-                                <Typography variant="body2" sx={{ color: '#4f46e5', fontWeight: 600, textAlign: 'center', width: '100%' }}>
+                                <Typography variant="body2" sx={{ color: THEME.primary, fontWeight: 600, textAlign: 'center', width: '100%' }}>
                                     Mark All as Read
                                 </Typography>
                             </MenuItem>
@@ -789,63 +1586,87 @@ export default function Dashboard({ articles, categories, auth, notifications })
                         
                         {notifications?.length > 0 ? (
                             notifications.map((notification) => (
-                                <MenuItem
-                                    key={notification.id}
-                                    onClick={() => {
-                                        // Mark this notification as read
-                                        setReadNotifications(prev => new Set([...prev, notification.id]));
-                                    }}
+                                <MenuItem 
+                                    key={notification.id} 
                                     sx={{ 
-                                        py: 2,
-                                        flexDirection: 'column',
+                                        py: 2, 
+                                        px: 2,
+                                        flexDirection: 'column', 
                                         alignItems: 'flex-start',
-                                        whiteSpace: 'normal',
-                                        '&:hover': {
-                                            backgroundColor: '#f8fafc',
-                                        },
-                                        opacity: readNotifications.has(notification.id) ? 0.6 : 1,
-                                        borderLeft: readNotifications.has(notification.id) ? '3px solid #e5e7eb' : '3px solid #4f46e5'
+                                        cursor: 'pointer',
+                                        borderBottom: `1px solid ${alpha(THEME.primary, 0.05)}`,
+                                        bgcolor: readNotifications.has(notification.id) ? 'transparent' : alpha(THEME.primary, 0.02),
+                                        '&:hover': { bgcolor: alpha(THEME.primary, 0.04) }
+                                    }}
+                                    onClick={() => {
+                                        markNotificationAsRead(notification.id);
+                                        setNotificationAnchor(null);
+                                        if (notification.data.type === 'revision_requested') {
+                                            window.location.href = route('writer.articles.revise.page', notification.data.article_id);
+                                        } else if (notification.data.type === 'article_published') {
+                                            window.location.href = route('writer.articles.show', notification.data.article_id);
+                                        }
                                     }}
                                 >
-                                    <Box sx={{ width: '100%' }}>
-                                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#111827' }}>
-                                            {notification.data.message}
-                                        </Typography>
-                                        
-                                        {notification.data.type === 'revision_requested' && (
-                                            <Box sx={{ mt: 1, p: 1.5, backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fcd34d' }}>
-                                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#92400e', display: 'block', mb: 0.5 }}>
-                                                    Editor Comments:
-                                                </Typography>
-                                                <Typography variant="body2" sx={{ color: '#78350f', fontStyle: 'italic' }}>
-                                                    "{notification.data.comments}"
-                                                </Typography>
-                                                <Typography variant="caption" sx={{ color: '#92400e', display: 'block', mt: 0.5 }}>
-                                                    — {notification.data.editor_name}
-                                                </Typography>
-                                            </Box>
-                                        )}
-                                        
-                                        {notification.data.type === 'article_published' && (
-                                            <Box sx={{ mt: 1, p: 1.5, backgroundColor: '#f0fdf4', borderRadius: '8px', border: '1px solid #86efac' }}>
-                                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#166534', display: 'block' }}>
-                                                    Published by: {notification.data.editor_name}
-                                                </Typography>
-                                                <Typography variant="body2" sx={{ color: '#166534' }}>
-                                                    Your article is now live and available for students to read!
-                                                </Typography>
-                                            </Box>
-                                        )}
-                                        
-                                        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-                                            {new Date(notification.created_at).toLocaleDateString()} • {new Date(notification.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                        </Typography>
-                                    </Box>
+                                    <Typography 
+                                        variant="body2" 
+                                        sx={{ 
+                                            fontWeight: readNotifications.has(notification.id) ? 400 : 700,
+                                            color: THEME.text.primary,
+                                            mb: 0.5
+                                        }}
+                                    >
+                                        {notification.data.message}
+                                    </Typography>
+                                    
+                                    {notification.data.type === 'revision_requested' && notification.data.comments && (
+                                        <Paper
+                                            sx={{
+                                                p: 1.5,
+                                                mt: 1,
+                                                width: '100%',
+                                                bgcolor: alpha(THEME.warning, 0.05),
+                                                borderRadius: '8px',
+                                                border: `1px solid ${alpha(THEME.warning, 0.2)}`
+                                            }}
+                                        >
+                                            <Typography variant="caption" sx={{ fontWeight: 600, color: THEME.warning, display: 'block', mb: 0.5 }}>
+                                                Editor's Comments:
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: THEME.text.secondary, fontStyle: 'italic' }}>
+                                                "{notification.data.comments}"
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ color: THEME.warning, display: 'block', mt: 0.5 }}>
+                                                — {notification.data.editor_name}
+                                            </Typography>
+                                        </Paper>
+                                    )}
+                                    
+                                    {notification.data.type === 'article_published' && (
+                                        <Paper
+                                            sx={{
+                                                p: 1.5,
+                                                mt: 1,
+                                                width: '100%',
+                                                bgcolor: alpha(THEME.success, 0.05),
+                                                borderRadius: '8px',
+                                                border: `1px solid ${alpha(THEME.success, 0.2)}`
+                                            }}
+                                        >
+                                            <Typography variant="body2" sx={{ color: THEME.success }}>
+                                                🎉 Your article is now live and available for readers!
+                                            </Typography>
+                                        </Paper>
+                                    )}
+                                    
+                                    <Typography variant="caption" sx={{ color: THEME.text.light, display: 'block', mt: 1 }}>
+                                        {new Date(notification.created_at).toLocaleDateString()} at {new Date(notification.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </Typography>
                                 </MenuItem>
                             ))
                         ) : (
-                            <MenuItem disabled>
-                                <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', py: 2 }}>
+                            <MenuItem disabled sx={{ py: 3 }}>
+                                <Typography variant="body2" sx={{ color: THEME.text.light, textAlign: 'center', width: '100%' }}>
                                     No notifications from editors
                                 </Typography>
                             </MenuItem>
@@ -863,83 +1684,211 @@ export default function Dashboard({ articles, categories, auth, notifications })
                     '& .MuiDrawer-paper': {
                         width: DRAWER_WIDTH,
                         boxSizing: 'border-box',
-                        background: 'white',
-                        borderRight: '1px solid #e2e8f0',
-                        mt: '64px',
-                    },
+                        bgcolor: 'white',
+                        borderRight: `1px solid ${alpha(THEME.primary, 0.1)}`,
+                        mt: '80px',
+                        p: 2
+                    }
                 }}
             >
+                <List>
+                    <ListItem
+                        button
+                        onClick={() => setActiveNav('dashboard')}
+                        sx={{
+                            borderRadius: '12px',
+                            mb: 1,
+                            bgcolor: activeNav === 'dashboard' ? alpha(THEME.primary, 0.08) : 'transparent',
+                            '&:hover': {
+                                bgcolor: activeNav === 'dashboard' ? alpha(THEME.primary, 0.12) : alpha(THEME.primary, 0.04)
+                            }
+                        }}
+                    >
+                        <ListItemIcon>
+                            <DashboardIcon sx={{ color: activeNav === 'dashboard' ? THEME.primary : THEME.text.light }} />
+                        </ListItemIcon>
+                        <ListItemText 
+                            primary="Dashboard"
+                            primaryTypographyProps={{
+                                sx: { 
+                                    fontWeight: activeNav === 'dashboard' ? 700 : 500,
+                                    color: activeNav === 'dashboard' ? THEME.primary : THEME.text.primary
+                                }
+                            }}
+                        />
+                    </ListItem>
+
+                    <ListItem
+                        button
+                        onClick={() => setActiveNav('create')}
+                        sx={{
+                            borderRadius: '12px',
+                            mb: 1,
+                            bgcolor: activeNav === 'create' ? alpha(THEME.primary, 0.08) : 'transparent',
+                            '&:hover': {
+                                bgcolor: activeNav === 'create' ? alpha(THEME.primary, 0.12) : alpha(THEME.primary, 0.04)
+                            }
+                        }}
+                    >
+                        <ListItemIcon>
+                            <AddIcon sx={{ color: activeNav === 'create' ? THEME.primary : THEME.text.light }} />
+                        </ListItemIcon>
+                        <ListItemText 
+                            primary="Create Article"
+                            primaryTypographyProps={{
+                                sx: { 
+                                    fontWeight: activeNav === 'create' ? 700 : 500,
+                                    color: activeNav === 'create' ? THEME.primary : THEME.text.primary
+                                }
+                            }}
+                        />
+                    </ListItem>
+
+                    <ListItem
+                        button
+                        onClick={() => setActiveNav('drafts')}
+                        sx={{
+                            borderRadius: '12px',
+                            mb: 1,
+                            bgcolor: activeNav === 'drafts' ? alpha(THEME.primary, 0.08) : 'transparent',
+                            '&:hover': {
+                                bgcolor: activeNav === 'drafts' ? alpha(THEME.primary, 0.12) : alpha(THEME.primary, 0.04)
+                            }
+                        }}
+                    >
+                        <ListItemIcon>
+                            <Badge badgeContent={draftArticles.length} color="primary">
+                                <CreateIcon sx={{ color: activeNav === 'drafts' ? THEME.primary : THEME.text.light }} />
+                            </Badge>
+                        </ListItemIcon>
+                        <ListItemText 
+                            primary="My Drafts"
+                            secondary={`${draftArticles.length} in progress`}
+                            primaryTypographyProps={{
+                                sx: { 
+                                    fontWeight: activeNav === 'drafts' ? 700 : 500,
+                                    color: activeNav === 'drafts' ? THEME.primary : THEME.text.primary
+                                }
+                            }}
+                            secondaryTypographyProps={{
+                                sx: { color: THEME.text.light }
+                            }}
+                        />
+                    </ListItem>
+
+                    <ListItem
+                        button
+                        onClick={() => setActiveNav('submitted')}
+                        sx={{
+                            borderRadius: '12px',
+                            mb: 1,
+                            bgcolor: activeNav === 'submitted' ? alpha(THEME.primary, 0.08) : 'transparent',
+                            '&:hover': {
+                                bgcolor: activeNav === 'submitted' ? alpha(THEME.primary, 0.12) : alpha(THEME.primary, 0.04)
+                            }
+                        }}
+                    >
+                        <ListItemIcon>
+                            <Badge 
+                                badgeContent={submittedArticles.length + revisedArticles.length} 
+                                color={revisedArticles.length > 0 ? 'warning' : 'secondary'}
+                            >
+                                <SendIcon sx={{ color: activeNav === 'submitted' ? THEME.primary : THEME.text.light }} />
+                            </Badge>
+                        </ListItemIcon>
+                        <ListItemText 
+                            primary="Submitted Articles"
+                            secondary={`${submittedArticles.length} under review, ${revisedArticles.length} need revision`}
+                            primaryTypographyProps={{
+                                sx: { 
+                                    fontWeight: activeNav === 'submitted' ? 700 : 500,
+                                    color: activeNav === 'submitted' ? THEME.primary : THEME.text.primary
+                                }
+                            }}
+                            secondaryTypographyProps={{
+                                sx: { color: THEME.text.light }
+                            }}
+                        />
+                    </ListItem>
+
+                    <ListItem
+                        button
+                        onClick={() => setActiveNav('published')}
+                        sx={{
+                            borderRadius: '12px',
+                            bgcolor: activeNav === 'published' ? alpha(THEME.primary, 0.08) : 'transparent',
+                            '&:hover': {
+                                bgcolor: activeNav === 'published' ? alpha(THEME.primary, 0.12) : alpha(THEME.primary, 0.04)
+                            }
+                        }}
+                    >
+                        <ListItemIcon>
+                            <RocketLaunchIcon sx={{ color: activeNav === 'published' ? THEME.primary : THEME.text.light }} />
+                        </ListItemIcon>
+                        <ListItemText 
+                            primary="Published Articles"
+                            secondary={`${publishedArticles.length} live`}
+                            primaryTypographyProps={{
+                                sx: { 
+                                    fontWeight: activeNav === 'published' ? 700 : 500,
+                                    color: activeNav === 'published' ? THEME.primary : THEME.text.primary
+                                }
+                            }}
+                            secondaryTypographyProps={{
+                                sx: { color: THEME.text.light }
+                            }}
+                        />
+                    </ListItem>
+                </List>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* Writing Tips */}
                 <Box sx={{ p: 2 }}>
-                    <List>
-                        <ListItem
-                            button
-                            onClick={() => setActiveNav('dashboard')}
-                            sx={{
-                                borderRadius: '8px',
-                                mb: 1,
-                                background: activeNav === 'dashboard' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
-                            }}
-                        >
-                            <ListItemIcon sx={{ color: activeNav === 'dashboard' ? '#667eea' : '#64748b' }}>
-                                <DashboardIcon />
+                    <Typography variant="subtitle2" sx={{ color: THEME.text.light, mb: 2 }}>
+                        Writing Tips
+                    </Typography>
+                    <List dense>
+                        <ListItem sx={{ px: 0 }}>
+                            <ListItemIcon sx={{ minWidth: 32 }}>
+                                <LightbulbIcon sx={{ fontSize: 16, color: THEME.accent }} />
                             </ListItemIcon>
-                            <ListItemText primary="Dashboard" />
+                            <ListItemText primary="Write without editing" secondary="Let your ideas flow first" secondaryTypographyProps={{ sx: { fontSize: '0.7rem' } }} />
                         </ListItem>
-
-                        <ListItem
-                            button
-                            onClick={() => setActiveNav('create')}
-                            sx={{
-                                borderRadius: '8px',
-                                mb: 1,
-                                background: activeNav === 'create' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
-                            }}
-                        >
-                            <ListItemIcon sx={{ color: activeNav === 'create' ? '#667eea' : '#64748b' }}>
-                                <AddIcon />
+                        <ListItem sx={{ px: 0 }}>
+                            <ListItemIcon sx={{ minWidth: 32 }}>
+                                <LightbulbIcon sx={{ fontSize: 16, color: THEME.accent }} />
                             </ListItemIcon>
-                            <ListItemText primary="Create Article" />
+                            <ListItemText primary="Set daily word goals" secondary="500 words a day adds up" secondaryTypographyProps={{ sx: { fontSize: '0.7rem' } }} />
                         </ListItem>
-
-                        <ListItem
-                            button
-                            onClick={() => setActiveNav('drafts')}
-                            sx={{
-                                borderRadius: '8px',
-                                mb: 1,
-                                background: activeNav === 'drafts' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
-                            }}
-                        >
-                            <ListItemIcon sx={{ color: activeNav === 'drafts' ? '#667eea' : '#64748b' }}>
-                                <CreateIcon />
+                        <ListItem sx={{ px: 0 }}>
+                            <ListItemIcon sx={{ minWidth: 32 }}>
+                                <LightbulbIcon sx={{ fontSize: 16, color: THEME.accent }} />
                             </ListItemIcon>
-                            <ListItemText
-                                primary="My Drafts"
-                                secondary={draftArticles.length}
-                            />
-                        </ListItem>
-
-                        <ListItem
-                            button
-                            onClick={() => setActiveNav('submitted')}
-                            sx={{
-                                borderRadius: '8px',
-                                background: activeNav === 'submitted' ? '#f3e5f5' : 'transparent',
-                                '&:hover': { background: '#f5f5f5' },
-                            }}
-                        >
-                            <ListItemIcon sx={{ color: activeNav === 'submitted' ? '#667eea' : '#64748b' }}>
-                                <DoneIcon />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary="Submitted Articles"
-                                secondary={submittedArticles.length + revisedArticles.length}
-                            />
+                            <ListItemText primary="Read aloud" secondary="Hear how your writing sounds" secondaryTypographyProps={{ sx: { fontSize: '0.7rem' } }} />
                         </ListItem>
                     </List>
+                </Box>
+
+                {/* Quick Quote */}
+                <Box sx={{ mt: 'auto', p: 2 }}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 2,
+                            borderRadius: '12px',
+                            background: THEME.gradient.accent,
+                            color: THEME.text.primary
+                        }}
+                    >
+                        <FormatQuoteIcon sx={{ fontSize: 20, opacity: 0.5, mb: 1 }} />
+                        <Typography variant="caption" sx={{ display: 'block', fontStyle: 'italic' }}>
+                            "The first draft is just you telling yourself the story."
+                        </Typography>
+                        <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.7 }}>
+                            — Terry Pratchett
+                        </Typography>
+                    </Paper>
                 </Box>
             </Drawer>
 
@@ -948,17 +1897,37 @@ export default function Dashboard({ articles, categories, auth, notifications })
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    mt: '64px',
-                    p: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
+                    mt: '80px',
+                    p: 4,
+                    minHeight: 'calc(100vh - 80px)',
+                    bgcolor: THEME.background.gradient
                 }}
             >
-                <Container maxWidth="lg" sx={{ flexGrow: 1 }}>
+                <Container maxWidth="xl" sx={{ height: '100%' }}>
                     {renderMainContent()}
                 </Container>
             </Box>
+
+            {/* Floating Action Button for Quick Create */}
+            {activeNav !== 'create' && (
+                <Tooltip title="Quick Create" arrow>
+                    <Fab
+                        color="primary"
+                        sx={{
+                            position: 'fixed',
+                            bottom: 24,
+                            right: 24,
+                            background: THEME.gradient.primary,
+                            '&:hover': {
+                                boxShadow: `0 8px 20px ${alpha(THEME.primary, 0.4)}`
+                            }
+                        }}
+                        onClick={() => setActiveNav('create')}
+                    >
+                        <AddIcon />
+                    </Fab>
+                </Tooltip>
+            )}
         </Box>
     );
 }
-

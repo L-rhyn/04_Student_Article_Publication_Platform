@@ -14,7 +14,7 @@ class StudentController extends Controller
     {
         $articles = Article::whereHas('status', function ($q) {
             $q->where('name', 'published');
-        })->with('writer','category')->get();
+        })->with('writer','category','comments.user')->get();
 
         $comments = Auth::user()->comments()->with('article')->get();
 

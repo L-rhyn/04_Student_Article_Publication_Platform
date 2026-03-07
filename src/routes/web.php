@@ -51,6 +51,7 @@ Route::middleware(['auth'])->prefix('writer')->name('writer.')->group(function (
     Route::put('/articles/{article}', [\App\Http\Controllers\WriterController::class, 'update'])->name('articles.update');
     Route::post('/articles/{article}/submit', [\App\Http\Controllers\WriterController::class, 'submit'])->name('articles.submit');
     Route::post('/articles/{article}/revise', [\App\Http\Controllers\WriterController::class, 'revise'])->name('articles.revise');
+    Route::post('/upload-image', [\App\Http\Controllers\WriterController::class, 'uploadImage'])->name('upload.image');
 });
 
 Route::middleware(['auth'])->prefix('editor')->name('editor.')->group(function () {
@@ -63,6 +64,12 @@ Route::middleware(['auth'])->prefix('editor')->name('editor.')->group(function (
 Route::middleware(['auth','role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\StudentController::class, 'dashboard'])->name('dashboard');
     Route::post('/articles/{article}/comment', [\App\Http\Controllers\StudentController::class, 'comment'])->name('articles.comment');
+});
+
+// Notification routes
+Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::post('/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+    Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
 });
 
 require __DIR__.'/auth.php';

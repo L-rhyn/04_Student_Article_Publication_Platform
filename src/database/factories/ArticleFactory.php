@@ -14,8 +14,10 @@ class ArticleFactory extends Factory
 
     public function definition()
     {
+        $title = $this->faker->sentence();
         return [
-            'title' => $this->faker->sentence(),
+            'title' => $title,
+            'slug' => \Illuminate\Support\Str::slug($title) . '-' . $this->faker->unique()->randomNumber(4),
             'content' => $this->faker->paragraphs(3, true),
             'status_id' => ArticleStatus::factory(),
             'writer_id' => User::factory(),

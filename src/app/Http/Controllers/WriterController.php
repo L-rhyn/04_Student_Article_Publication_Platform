@@ -163,6 +163,12 @@ class WriterController extends Controller
         }
 
         $article->load('status', 'category');
+        
+        // Load comments with user relationships for published articles
+        if ($article->status->name === 'published') {
+            $article->load(['comments.user']);
+        }
+        
         $categories = \App\Models\Category::orderBy('name')->get();
         
         return Inertia::render('Writer/ArticleView', compact('article', 'categories'));
@@ -198,9 +204,7 @@ class WriterController extends Controller
             abort(403);
         }
 
-        $article->load(['status', 'category', 'comments' => function($query) {
-            $query->with('user')->where('content', 'like', '%revision%');
-        }]);
+        $article->load(['status', 'category', 'comments.user']);
         $categories = \App\Models\Category::orderBy('name')->get();
         
         return Inertia::render('Writer/ArticleRevise', compact('article', 'categories'));
@@ -220,12 +224,44 @@ class WriterController extends Controller
         try {
             $editors = \App\Models\User::role('editor')->get();
             foreach ($editors as $editor) {
-                $editor->notify(new \App\Notifications\ArticleSubmittedNotification($article));
+                $editor->notify(new \App\Notifications\ArticleRevisedNotification($article));
             }
         } catch (\Exception $e) {
             // Notifications table doesn't exist yet, continue without notification
         }
         
         return redirect()->route('writer.dashboard')->with('success','Article revised and submitted to editor');
+    }
+
+    public function uploadImage(Request $request)
+    {
+        // Check if user has writer role
+        $user = auth()->user();
+        $userRoles = $user->roles->pluck('name')->toArray();
+
+        if (!in_array('writer', $userRoles)) {
+            abort(403);
+        }
+
+        $request->validate([
+            'upload' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // 2MB max
+        ]);
+
+        $image = $request->file('upload');
+
+        // Generate a unique filename
+        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+        // Store the image in storage/app/public/article-images directory
+        $path = $image->storeAs('article-images', $filename, 'public');
+
+        // Return the URL for Jodit
+        $url = asset('storage/' . $path);
+
+        return response()->json([
+            'uploaded' => 1,
+            'fileName' => $filename,
+            'url' => $url
+        ]);
     }
 }
